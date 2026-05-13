@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>コトバの王国 ―外向性フィックスの旅―</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3d2d6b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="コトバの王国">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700&family=Zen+Antique&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0d0a1a;
+  --surface: #1a1530;
+  --border:  #3d2d6b;
+  --gold:    #f0c060;
+  --easy:    #5bcc7a;
+  --medium:  #f0a030;
+  --hard:    #e05050;
+  --text:    #e8dfc8;
+  --accent:  #9b6dff;
+  --dim:     #6e6080;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Shippori Mincho',serif;overflow-x:hidden}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;padding:16px;animation:fadeIn .3s ease}
+.screen.active{display:flex;flex-direction:column}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── COMMON ── */
+h1{font-family:'Zen Antique',serif;color:var(--gold);text-align:center;text-shadow:0 0 20px rgba(240,192,96,.5)}
+h2{font-family:'Zen Antique',serif;color:var(--gold);font-size:1.05rem;margin-bottom:8px}
+.btn{display:block;width:100%;padding:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'Shippori Mincho',serif;font-size:1rem;border-radius:8px;cursor:pointer;transition:.2s;text-align:center;line-height:1.4}
+.btn:hover{background:#25204a;border-color:var(--accent)}
+.btn:active{transform:scale(.98)}
+.btn-gold{background:linear-gradient(135deg,#7a5010,#c09030);border-color:var(--gold);color:#fff;font-weight:700;box-shadow:0 0 12px rgba(240,192,96,.3)}
+.btn-gold:hover{box-shadow:0 0 24px rgba(240,192,96,.5)}
+.btn-accent{background:linear-gradient(135deg,#4a2080,#7b3fd0);border-color:var(--accent);color:#fff}
+.btn-danger{background:linear-gradient(135deg,#6a1010,#b03030);border-color:var(--hard);color:#fff}
+.btn-sm{padding:8px 16px;width:auto;display:inline-block;font-size:.85rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:700;white-space:nowrap}
+.badge-easy  {background:rgba(91,204,122,.2);color:var(--easy);  border:1px solid var(--easy)}
+.badge-medium{background:rgba(240,160,48,.2);color:var(--medium);border:1px solid var(--medium)}
+.badge-hard  {background:rgba(224,80,80,.2); color:var(--hard);  border:1px solid var(--hard)}
+.badge-boss  {background:rgba(155,109,255,.2);color:var(--accent);border:1px solid var(--accent)}
+.gap{height:12px}
+.gap-lg{height:24px}
+.center{text-align:center}
+.dim{color:var(--dim);font-size:.85rem}
+
+/* ── PLAYER IMAGE ── */
+.player-img{display:block;object-fit:contain;image-rendering:auto;mix-blend-mode:luminosity}
+.player-fallback{display:none;font-size:4rem;text-align:center}
+
+/* ── NAVBAR ── */
+#navbar{display:none;position:fixed;bottom:0;left:0;right:0;background:#130f24;border-top:1px solid var(--border);z-index:100}
+#navbar.active{display:flex}
+.nav-btn{flex:1;padding:10px 4px 8px;background:none;border:none;color:var(--dim);font-size:.6rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:.2s}
+.nav-btn .nav-icon{font-size:1.2rem}
+.nav-btn.active,.nav-btn:hover{color:var(--gold)}
+
+/* ── XP BAR ── */
+.xp-bar-wrap{background:#110d20;border-radius:4px;height:8px;overflow:hidden;margin:4px 0}
+.xp-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:4px;transition:width .6s ease}
+
+/* ── TITLE ── */
+#screen-title{justify-content:center;align-items:center;gap:20px;
+  background:radial-gradient(ellipse at center,#1a1040 0%,var(--bg) 70%)}
+.title-logo h1{font-size:1.8rem;line-height:1.4;margin-bottom:6px}
+.title-sub{color:var(--dim);font-size:.85rem;letter-spacing:.1em;text-align:center}
+.title-player{text-align:center;animation:float 3s ease-in-out infinite}
+.title-player .player-img{width:180px;height:180px;margin:0 auto}
+.title-player .player-fallback{font-size:5rem}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.pwa-guide{background:#0d1520;border:1px solid #1a4a6a;border-radius:10px;padding:12px;font-size:.8rem;line-height:1.7;width:100%;max-width:360px}
+
+/* ── SETUP ── */
+#screen-setup{gap:14px;padding-top:32px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-item{background:#110d20;border-radius:8px;padding:8px 10px}
+.stat-label{font-size:.7rem;color:var(--dim)}
+.stat-val{font-size:1rem;color:var(--gold);font-weight:700}
+.stat-bar{height:4px;background:#221a40;border-radius:2px;margin-top:4px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--gold))}
+.highlight-stat-item .stat-val{color:#ffaa00;font-size:1.1rem}
+.highlight-stat-item .stat-bar-fill{background:linear-gradient(90deg,#f0a030,#f0c060)}
+input[type=text],input[type=url],textarea{
+  width:100%;background:#110d20;border:1px solid var(--border);color:var(--text);
+  font-family:'Shippori Mincho',serif;font-size:1rem;padding:10px;border-radius:8px;outline:none}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:80px}
+
+/* ── MAP ── */
+#screen-map{padding-bottom:80px}
+.map-header{margin-bottom:16px}
+.level-line{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.level-line .lv{font-size:.85rem;color:var(--accent)}
+.level-line .title-str{color:var(--gold);font-size:.95rem;font-weight:700}
+.streak-line{color:var(--medium);font-size:.85rem;margin-bottom:4px}
+.map-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.week-node{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;transition:.2s;position:relative}
+.week-node.current{border-color:var(--gold);background:#201848;box-shadow:0 0 16px rgba(240,192,96,.3);cursor:pointer;animation:pulse 2s ease-in-out infinite}
+.week-node.completed{border-color:var(--easy);background:#0d1f15}
+.week-node.locked{opacity:.35;cursor:default}
+.week-node.unlocked{cursor:default}
+@keyframes pulse{0%,100%{box-shadow:0 0 16px rgba(240,192,96,.3)}50%{box-shadow:0 0 28px rgba(240,192,96,.6)}}
+.week-num{font-size:.7rem;color:var(--dim)}
+.week-icon{font-size:1.4rem;margin:4px 0}
+.week-label{font-size:.65rem;color:var(--dim)}
+.map-week-info{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;font-size:.82rem;color:var(--dim);margin-bottom:12px}
+
+/* ── QUEST ── */
+#screen-quest{padding-bottom:80px}
+.quest-phase{display:none}
+.quest-phase.active{display:block;animation:fadeIn .3s}
+.travel-text{background:#0d0820;border:1px solid #2a1a5a;border-radius:10px;padding:14px;margin-bottom:14px;line-height:1.8;font-size:.9rem;color:#c8b8f0}
+.challenge-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;transition:.15s}
+.challenge-card.selected{border-color:var(--accent);background:#1a1040}
+.challenge-card-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.challenge-name{flex:1;font-size:.88rem;line-height:1.5}
+.challenge-enemy{font-size:.75rem;color:var(--dim);margin-top:2px}
+.challenge-check{width:20px;height:20px;flex-shrink:0;margin-top:2px;accent-color:var(--accent);cursor:pointer}
+.enemy-popup{background:#0d0820;border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:6px;font-size:.78rem;color:#b8a8d8;line-height:1.6}
+/* challenge flow */
+.flow-card{background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:14px;margin-bottom:10px}
+.flow-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.flow-player{width:48px;height:48px;object-fit:contain;flex-shrink:0}
+.flow-player-fallback{font-size:2rem;flex-shrink:0;display:none}
+.result-btns{display:flex;gap:8px;margin-top:10px}
+.result-btns .btn{flex:1;padding:12px 8px;font-size:.88rem}
+.memo-area{margin-top:12px;display:none}
+.memo-area.open{display:block}
+.skill-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(13,8,32,.96);border:2px solid var(--gold);color:var(--gold);
+  font-family:'Zen Antique',serif;font-size:1.3rem;font-weight:700;
+  padding:20px 36px;border-radius:14px;z-index:250;pointer-events:none;
+  opacity:0;transition:opacity .25s;text-align:center;box-shadow:0 0 40px rgba(240,192,96,.4)}
+.skill-toast .skill-sub{font-size:.8rem;color:var(--dim);font-family:'Shippori Mincho',serif;margin-top:4px}
+.skill-toast.show{opacity:1}
+/* gate */
+.gate-wrap{text-align:center;padding:24px 0}
+.gate-icon{font-size:4rem;animation:gateClose .8s ease forwards}
+@keyframes gateClose{0%{transform:scaleY(1.2);opacity:.5}100%{transform:scaleY(1);opacity:1}}
+.gate-days-num{font-size:2.5rem;color:var(--gold);font-weight:700;display:block;margin:8px 0}
+.gate-text{color:#c8b8f0;font-size:.95rem;line-height:1.9;margin-top:10px;white-space:pre-wrap}
+
+/* ── STATUS ── */
+#screen-status{padding-bottom:80px;gap:12px}
+.status-player{display:flex;justify-content:center;margin:4px 0 12px}
+.status-player .player-img{width:160px;height:160px;object-fit:contain}
+.status-player .player-fallback{font-size:5rem}
+.status-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.status-row:last-child{margin-bottom:0}
+.stat-name{width:110px;font-size:.78rem;color:var(--dim)}
+.stat-current{width:36px;text-align:right;font-size:.85rem;color:var(--gold)}
+.stat-bar-h{flex:1;height:6px;background:#110d20;border-radius:3px;overflow:hidden}
+.stat-bar-h-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width 1s ease}
+.hl-stat .stat-name{color:var(--gold)}
+.hl-stat .stat-bar-h-fill{background:linear-gradient(90deg,#f0a030,#f0c060)}
+
+/* ── LOG ── */
+#screen-log{padding-bottom:80px;gap:12px}
+.log-week{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.log-week-header{background:#130f24;padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.log-week-body{padding:10px 14px;display:none}
+.log-week-body.open{display:block}
+.log-entry{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #1e1838;font-size:.82rem}
+.log-entry:last-child{border-bottom:none}
+.log-status{font-size:1rem;width:22px;flex-shrink:0;padding-top:2px}
+.log-memo{color:var(--dim);font-size:.78rem;margin-top:3px}
+
+/* ── NEWGAME+ ── */
+#screen-newgame{padding-bottom:80px;background:radial-gradient(ellipse at center,#200a30 0%,var(--bg) 70%);gap:0}
+.newgame-player{display:flex;justify-content:center;margin-bottom:12px}
+.newgame-player .player-img{width:120px;height:120px;object-fit:contain;filter:brightness(.7) sepia(.3)}
+.newgame-player .player-fallback{font-size:4rem;filter:grayscale(.5)}
+.demon-text{background:#0a0515;border:1px solid #5a1a8a;border-radius:12px;padding:18px;
+  margin-bottom:14px;line-height:2.1;font-size:.9rem;color:#d8b0ff;
+  min-height:100px;white-space:pre-wrap;word-break:break-all}
+.correction-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:.84rem}
+.c-plus{color:var(--easy)}
+.c-minus{color:var(--hard)}
+.c-label{flex:1;color:var(--dim)}
+.remaining-section{background:#0a0515;border:1px solid #3a1a6a;border-radius:10px;padding:14px;margin-bottom:14px}
+.remaining-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:.82rem}
+
+/* ── OVERLAYS ── */
+.particle-container{position:fixed;inset:0;pointer-events:none;z-index:300}
+.particle{position:absolute;width:8px;height:8px;border-radius:50%;
+  animation:pfly 1s ease-out forwards}
+@keyframes pfly{0%{transform:translate(0,0) scale(1);opacity:1}
+  100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+.flash-overlay{position:fixed;inset:0;background:white;z-index:400;pointer-events:none;opacity:0;transition:opacity .1s}
+.levelup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;
+  display:none;flex-direction:column;justify-content:center;align-items:center;gap:16px}
+.levelup-overlay.show{display:flex;animation:fadeIn .3s}
+.levelup-title{font-family:'Zen Antique',serif;font-size:2.2rem;color:var(--gold);
+  text-shadow:0 0 30px rgba(240,192,96,.8);animation:pulse 1s infinite}
+.levelup-subtitle{color:var(--text);font-size:1rem;text-align:center;padding:0 20px}
+.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:600;
+  display:none;justify-content:center;align-items:center;padding:20px}
+.dialog-overlay.show{display:flex}
+.dialog-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;width:100%;max-width:360px}
+.dialog-msg{margin-bottom:18px;line-height:1.8;text-align:center;font-size:.95rem}
+.dialog-btns{display:flex;gap:10px}
+.dialog-btns .btn{flex:1}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* responsive */
+@media(min-width:600px){
+  .screen{max-width:480px;margin:0 auto}
+  #navbar{max-width:480px;left:50%;transform:translateX(-50%)}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     TITLE
+════════════════════════════════════════ -->
+<div id="screen-title" class="screen active">
+  <div class="title-player">
+    <img class="player-img" src="assets/player.png" alt="なおたか"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <div class="player-fallback">🐐</div>
+  </div>
+  <div class="title-logo">
+    <h1>コトバの王国<br><small style="font-size:.55em;color:var(--dim)">―外向性フィックスの旅―</small></h1>
+    <p class="title-sub">勇者「なおたか」の15週間の挑戦</p>
+  </div>
+  <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-gold" id="btn-newgame">✨ 冒険を始める</button>
+    <button class="btn btn-accent" id="btn-continue" style="display:none">⚔️ 旅を続ける</button>
+    <button class="btn" id="btn-reset-data"
+      style="display:none;font-size:.75rem;color:var(--dim);padding:8px">🗑 データをリセット</button>
+  </div>
+  <div class="pwa-guide" id="pwa-guide" style="display:none">
+    📱 <strong>iPhoneをご利用の方へ</strong><br>
+    Safari で開き、共有ボタン →「ホーム画面に追加」でPWAとして使えます。
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SETUP
+════════════════════════════════════════ -->
+<div id="screen-setup" class="screen">
+  <h1 style="font-size:1.4rem">⚙️ 旅の準備</h1>
+  <div class="card">
+    <h2>勇者プロフィール</h2>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px">
+      <img class="player-img" src="assets/player.png" alt="なおたか"
+        style="width:72px;height:72px;object-fit:contain;border-radius:8px;background:#0a0818"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <div class="player-fallback" style="font-size:3rem">🐐</div>
+      <div>
+        <div style="color:var(--gold);font-size:1.05rem;font-weight:700;margin-bottom:4px">なおたか</div>
+        <div class="dim">ヤギ族のクラフター勇者</div>
+        <div class="dim">想いを編んで、やさしさを届ける冒険者</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>初期ステータス</h2>
+    <div class="stat-grid" id="setup-stats"></div>
+  </div>
+  <div class="card">
+    <h2>GAS エンドポイントURL <span class="dim">（任意）</span></h2>
+    <p class="dim" style="margin-bottom:8px">GAS Web App をデプロイ後に貼り付けてください。未入力でもプレイできます。</p>
+    <input type="url" id="gas-endpoint" placeholder="https://script.google.com/macros/s/...">
+  </div>
+  <button class="btn btn-gold" id="btn-start-journey">🗺️ 旅を始める！</button>
+  <div class="gap-lg"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     MAP
+════════════════════════════════════════ -->
+<div id="screen-map" class="screen">
+  <div class="map-header">
+    <div class="level-line">
+      <span class="lv" id="map-lv">Lv.1</span>
+      <span class="title-str" id="map-title">🐣 ひきこもり見習い</span>
+      <span style="margin-left:auto;font-size:.78rem;color:var(--dim)" id="map-run">Run 1</span>
+    </div>
+    <div class="xp-bar-wrap"><div class="xp-bar" id="map-xpbar" style="width:0%"></div></div>
+    <div style="font-size:.72rem;color:var(--dim);text-align:right;margin-bottom:4px" id="map-xptext"></div>
+    <div class="streak-line" id="map-streak" style="display:none"></div>
+  </div>
+  <div class="map-week-info" id="map-week-info"></div>
+  <div class="map-grid" id="map-grid"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     QUEST
+════════════════════════════════════════ -->
+<div id="screen-quest" class="screen">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+    <button class="btn btn-sm" id="btn-back-map" style="width:auto;padding:8px 12px">← マップ</button>
+    <h2 style="margin:0" id="quest-week-title">Week 1 の旅</h2>
+  </div>
+
+  <!-- STEP1 -->
+  <div class="quest-phase" id="phase-show">
+    <div class="travel-text" id="travel-text"></div>
+    <div id="challenge-cards-show"></div>
+    <div class="gap"></div>
+    <button class="btn btn-gold" id="btn-to-select">⚔️ 強敵を確認する</button>
+  </div>
+
+  <!-- STEP2 -->
+  <div class="quest-phase" id="phase-select">
+    <div class="travel-text" style="font-size:.82rem">
+      向き合う強敵を選べ。複数選択できる。
+    </div>
+    <div id="challenge-cards-select"></div>
+    <div class="gap"></div>
+    <button class="btn btn-gold" id="btn-sortie">⚔️ 立ち向かう！</button>
+  </div>
+
+  <!-- STEP3 -->
+  <div class="quest-phase" id="phase-challenge">
+    <div id="challenge-flow-area"></div>
+  </div>
+
+  <!-- STEP4 -->
+  <div class="quest-phase" id="phase-remnant">
+    <div class="travel-text">
+      まだ向き合っていない気配が、すぐそこにある…挑むか？
+    </div>
+    <div id="remnant-list"></div>
+    <div class="gap"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-accent" id="btn-fight-remnant">⚔️ 立ち向かう！</button>
+      <button class="btn" id="btn-skip-remnant">今は通り過ぎる</button>
+    </div>
+  </div>
+
+  <!-- STEP5: gate -->
+  <div class="quest-phase" id="phase-gate">
+    <div class="gate-wrap">
+      <div class="gate-icon">🏰</div>
+      <div class="gate-text" id="gate-text"></div>
+    </div>
+    <div class="gap-lg"></div>
+    <button class="btn" id="btn-gate-map">← マップへ戻る</button>
+  </div>
+
+  <!-- STEP5b: 15週クリア -->
+  <div class="quest-phase" id="phase-clear">
+    <div class="travel-text" style="text-align:center">
+      🏆 <strong style="color:var(--gold)">15週間の旅、完結！</strong><br><br>
+      なおたかは大魔王モクネンを打ち倒し、<br>コトバの王国に言葉を取り戻した！
+    </div>
+    <div class="remaining-section" id="remaining-section" style="display:none">
+      <div style="font-size:.85rem;color:#d8b0ff;line-height:2;margin-bottom:10px">
+        📜「ふと想い返した…<br>　傷を恐れて、向き合うことを避けた強敵たちのことを。
+      </div>
+      <div style="font-size:.8rem;color:var(--gold);margin-bottom:8px;font-family:'Zen Antique',serif">
+        【向き合えなかった強敵たち】
+      </div>
+      <div id="remaining-list"></div>
+      <div style="margin-top:10px;font-size:.82rem;color:#d8b0ff;line-height:1.8">
+        奴らはまだどこかに潜んでいる。<br>次の旅で、決着をつけるか？」
+      </div>
+    </div>
+    <div class="gap"></div>
+    <button class="btn btn-gold" id="btn-newgame-plus">🔁 強くてニューゲーム</button>
+    <div class="gap"></div>
+    <button class="btn" id="btn-clear-map">← マップへ戻る</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     STATUS
+════════════════════════════════════════ -->
+<div id="screen-status" class="screen">
+  <h1 style="font-size:1.25rem;margin-bottom:4px">📊 なおたかのステータス</h1>
+  <div class="status-player">
+    <img class="player-img" src="assets/player.png" alt="なおたか"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <div class="player-fallback">🐐</div>
+  </div>
+  <div class="card">
+    <div style="text-align:center">
+      <div style="color:var(--gold);font-size:1.05rem;font-weight:700;margin-bottom:4px" id="st-title"></div>
+      <div class="dim" id="st-run"></div>
+      <div style="margin:10px 0">
+        <div class="xp-bar-wrap"><div class="xp-bar" id="st-xpbar" style="width:0%"></div></div>
+        <div class="dim" style="text-align:right;font-size:.72rem" id="st-xptext"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>ステータス</h2>
+    <div id="status-rows"></div>
+  </div>
+  <div class="card">
+    <h2>実績</h2>
+    <div id="status-achievements" style="font-size:.85rem;line-height:2.1;color:var(--dim)"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     LOG
+════════════════════════════════════════ -->
+<div id="screen-log" class="screen">
+  <h1 style="font-size:1.25rem;margin-bottom:4px">📜 冒険記録</h1>
+  <div id="log-body"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     NEWGAME+
+════════════════════════════════════════ -->
+<div id="screen-newgame" class="screen">
+  <h1 style="font-size:1.15rem;margin-bottom:14px">🏰 魔王モクネンの声が響く…</h1>
+  <div class="newgame-player">
+    <img class="player-img" src="assets/player.png" alt="なおたか"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <div class="player-fallback">🐐</div>
+  </div>
+  <div class="demon-text" id="demon-text"></div>
+  <div class="card" id="correction-card" style="display:none">
+    <h2>【今回への補正】</h2>
+    <div id="correction-rows"></div>
+  </div>
+  <div class="gap"></div>
+  <button class="btn btn-gold" id="btn-start-newgame" style="display:none">🗺️ 新たな旅へ出立する</button>
+  <div class="gap"></div>
+  <button class="btn" id="btn-close-eyes" style="display:none">今は目を閉じる</button>
+  <div class="gap-lg"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     OVERLAYS
+════════════════════════════════════════ -->
+<div id="particle-container" class="particle-container"></div>
+<div id="flash-overlay" class="flash-overlay"></div>
+
+<div id="skill-toast" class="skill-toast">
+  <div id="skill-name"></div>
+  <div class="skill-sub" id="skill-xp"></div>
+</div>
+
+<div id="levelup-overlay" class="levelup-overlay">
+  <div style="font-size:2.5rem">🌟</div>
+  <div class="levelup-title">LEVEL UP！</div>
+  <div class="levelup-subtitle" id="levelup-subtitle"></div>
+  <button class="btn btn-sm btn-gold" onclick="closeLevelUp()">続ける</button>
+</div>
+
+<div id="dialog-overlay" class="dialog-overlay">
+  <div class="dialog-box">
+    <div class="dialog-msg" id="dialog-msg"></div>
+    <div class="dialog-btns">
+      <button class="btn btn-gold" id="dialog-ok">決定</button>
+      <button class="btn" id="dialog-cancel">戻る</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════ -->
+<nav id="navbar">
+  <button class="nav-btn" onclick="navTo('screen-map',this)">
+    <span class="nav-icon">🗺️</span>マップ
+  </button>
+  <button class="nav-btn" onclick="navTo('screen-quest',this)">
+    <span class="nav-icon">⚔️</span>クエスト
+  </button>
+  <button class="nav-btn" onclick="navTo('screen-status',this)">
+    <span class="nav-icon">📊</span>ステータス
+  </button>
+  <button class="nav-btn" onclick="navTo('screen-log',this)">
+    <span class="nav-icon">📜</span>記録
+  </button>
+</nav>
+
+<!-- ════════════════════════════════════════
+     SCRIPT
+════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ─────────────────────────────────────
+// CONSTANTS
+// ─────────────────────────────────────
+
+const LEVELS = [
+  {lv:1,title:'🐣 ひきこもり見習い',      xp:0},
+  {lv:2,title:'🐥 おそるおそる外出中',     xp:50},
+  {lv:3,title:'🚶 会話できる人間',          xp:120},
+  {lv:4,title:'😄 なんか話しかけられてる', xp:220},
+  {lv:5,title:'🌟 ちょっと社交的な人',     xp:350},
+  {lv:6,title:'🔥 もう内向型とは言わせない',xp:500},
+  {lv:7,title:'👑 外向性フィックス完了',   xp:650},
+];
+const RUN_PREFIX = ['','','歴戦の','伝説の','不滅の'];
+
+const INITIAL_STATS = {
+  hp:55, int:65, cha:60, agi:60, cri:70,
+  con:55, emo:88, heal:68, plan:62, self:45,
+};
+const STAT_LABELS = {
+  hp:'体力 HP', int:'知力 INT', cha:'コミュカ CHA', agi:'行動力 AGI',
+  cri:'創造力 CRI', con:'継続力 CON', emo:'共感力 EMO',
+  heal:'癒し力 HEAL', plan:'計画力 PLAN', self:'自己肯定力 SELF',
+};
+
+const TRAVEL_TEXTS = {
+  '1-2': '村外れの草むらで、何かがうごめいている…',
+  '3-5': '森の木々の間から、複数の気配が近づいてくる。',
+  '6-8': '霧の中から、姿が見えない何かが語りかけてくる…',
+  '9-10':'山の頂を越えた先で、強敵たちが待ち構えていた。',
+  '11-13':'魔王城への橋の上。ここを通すわけにはいかないようだ。',
+  '14':  '城の最奥へと続く回廊。もう後戻りはできない。',
+  '15':  'ついに、玉座の間への扉が見えた。最後の力を振り絞れ。',
+};
+const GATE_FNS = {
+  '1-5':  n => `次の道が開くまで、まだ ${n} 日かかるようだ。\nしばし、ここで英気を養え。`,
+  '6-10': n => `霧が晴れるまで、あと ${n} 日…\n焦らず、次の道に備えよ。`,
+  '11-15':n => `城への道が開くまで、残り ${n} 日。\nなおたか…お前ならできる。`,
+};
+
+// 必殺技マッピング
+const SKILLS = {
+  easy:   {name:'ぬくもり編み',      xp:10},
+  medium: {name:'心つなぎギフト',    xp:20},
+  hard:   {name:'ひらめきクラフト',  xp:35},
+  boss:   {name:'想いの記憶（必殺）',xp:35},
+  memo:   {name:'やさしさシールド',  xp:5},
+  allbonus:{name:'想いの記憶（必殺）',xp:15},
+  fullbonus:{name:'想いの記憶（必殺）',xp:30},
+};
+
+const CHALLENGES = [
+  {id:1, d:'easy',  name:'寝る前に日中に経験したポジティブなコミュニケーションを振り返り、何が良かったかを考える'},
+  {id:2, d:'easy',  name:'お店のレジの人に挨拶する'},
+  {id:3, d:'easy',  name:'誰かのFacebookの投稿に肯定的なコメントをする'},
+  {id:4, d:'easy',  name:'お店のレジ係にその日の調子を聞く'},
+  {id:5, d:'easy',  name:'一日のうちに起こった面白い話や興味深い話をひとつ書いてみる'},
+  {id:6, d:'easy',  name:'SNSのステータスを更新して、ポジティブな体験や面白い体験を共有する'},
+  {id:7, d:'easy',  name:'「お仕事はなにをしていますか？」のようなよく聞かれる質問に対して、事前に準備した簡単な回答をいくつか用意しておく'},
+  {id:8, d:'easy',  name:'初対面の人に聞くべき質問をまとめておく'},
+  {id:9, d:'easy',  name:'自分の身の回りで起こった面白い話を友人にする'},
+  {id:10,d:'easy',  name:'意見を求められたら率直な意見を述べる'},
+  {id:11,d:'easy',  name:'誰にも話したことのない考えや意見をリストアップし、少なくともひとつを友人と共有する'},
+  {id:12,d:'easy',  name:'自分がワクワクすることをすべてリストアップしてみる'},
+  {id:13,d:'easy',  name:'試してみたい新しいレストランやアクティビティのリストを作り、最低1つは試す'},
+  {id:14,d:'easy',  name:'スマホのアプリ「Meet Up」をダウンロードして、行ってみたいイベントを1つか2つ探してみる'},
+  {id:15,d:'easy',  name:'調べ物をして、参加してみたいクラブやサークルを探す'},
+  {id:16,d:'easy',  name:'しばらく話していない友人に電話する'},
+  {id:17,d:'easy',  name:'初対面の人に挨拶をしてみる'},
+  {id:18,d:'easy',  name:'初対面の人に挨拶し、共通の環境についてコメントする（「天気がいいですね！」など）'},
+  {id:19,d:'easy',  name:'キャンパスや家の近くにいる初対面の人に笑顔で手を振ってみる'},
+  {id:20,d:'easy',  name:'普段は家でリラックスしている時間帯に、外に出て何かアクティブなことをする'},
+  {id:21,d:'medium',name:'友人をコーヒーに誘う'},
+  {id:22,d:'medium',name:'なじみのあるレストランやバーに行き、サーバーと話をする'},
+  {id:23,d:'medium',name:'新しいレストランやバーに行って、サーバーと話をする'},
+  {id:24,d:'medium',name:'人が集まるレストラン、コーヒーショップ、バーなどに行って、新しい人に挨拶する'},
+  {id:25,d:'medium',name:'親しい友人に心を開いて正直に今日の出来事を話し、相手の様子を聞く'},
+  {id:26,d:'medium',name:'友人や知人に、社会的なイベントに同行してもらう'},
+  {id:27,d:'medium',name:'友人・知人に、ライブや映画、ショーを見に行こうと誘う'},
+  {id:28,d:'medium',name:'自分の趣味に友人・知人を誘う（ゲームやスポーツなど）'},
+  {id:29,d:'medium',name:'友達と過ごす週末の計画を立てる'},
+  {id:30,d:'medium',name:'友人を食事に誘う'},
+  {id:31,d:'medium',name:'同僚、近所の人、クラスメートをコーヒーに誘ってみる'},
+  {id:32,d:'medium',name:'同僚、近所の人、クラスメートをランチやディナーに誘う'},
+  {id:33,d:'medium',name:'クラスやグループの集まりで手を挙げて質問に答えたり、意見を言ったりする'},
+  {id:34,d:'medium',name:'親しい友人に自分の将来の希望や夢を率直に話し、相手のことも聞いてみる'},
+  {id:35,d:'medium',name:'ワクワクするようなアクティブな活動を特定し、その活動をしに行く'},
+  {id:36,d:'medium',name:'友達と一緒にイベントを計画する（ゲーム、映画、食事）'},
+  {id:37,d:'medium',name:'新しい人に自分を紹介する'},
+  {id:38,d:'medium',name:'初対面の人に、自分について少なくとも2つの質問をする'},
+  {id:39,d:'hard',  name:'ボランティア団体を探して、ボランティアイベントに参加する'},
+  {id:40,d:'hard',  name:'公園やキャンパスでカジュアルスポーツをしている人を見つけて、一緒に遊ぼうと誘う'},
+  {id:41,d:'hard',  name:'友達を誘ってゲームやテレビ番組を見る、またはパーティーや社交場を見つけて参加する'},
+  {id:42,d:'hard',  name:'人が多く集まる場所に行って、新しい人と話す'},
+  {id:43,d:'hard',  name:'レストラン、コーヒーショップ、バーなど人が集まる場所に行って、新しい人とおしゃべりする'},
+  {id:44,d:'hard',  name:'親しい友人に、今抱えている問題を正直に打ち明けてみる'},
+  {id:45,d:'hard',  name:'社交的なアクティビティを率先して企画して、1人または複数の友人を誘う'},
+  {id:46,d:'hard',  name:'友達と一緒にイベントを計画し、新しい人を招待してもらう'},
+  {id:47,d:'hard',  name:'興味のあるクラブやサークルを見つけ、友達を連れて参加してみる'},
+  {id:48,d:'hard',  name:'スマホの「Meet Up」アプリで興味のあるイベントに友達を連れて行ってみる'},
+  {id:49,d:'hard',  name:'ボランティアでリーダーシップをとる、またはソーシャルイベントの企画を立てる'},
+  {id:50,d:'hard',  name:'スマホの「Meet Up」アプリで、自分の趣味を中心としたイベントを企画してみる'},
+];
+
+const ENEMY_POOL = {
+  easy:[
+    {name:'ヘジタール',  flavor:'いつも一歩手前で止まる。「やっぱりやめておこう」が口癖の躊躇小妖精。'},
+    {name:'ダマリス',    flavor:'口を持たない。伝えたいことは山ほどあるのに、言葉にする前に消えていく。'},
+    {name:'ソリテュード', flavor:'一人でいることを愛しすぎた小鳥。誰かを呼ぶ声を忘れてしまった。'},
+    {name:'クリプタ',    flavor:'自分を石の中に閉じ込めた。外から叩いても、中はいつも空っぽだ。'},
+    {name:'モラトゥス',  flavor:'「明日やろう」を百回繰り返した結果、眠ったまま漂い続けている。'},
+    {name:'イナーシア',  flavor:'声にならない言葉を心の中に溜め込む。その重さで動けなくなった。'},
+  ],
+  medium:[
+    {name:'フィニトゥス',    flavor:'完璧でなければ動けない。準備が整うその日を、永遠に待ち続けている。'},
+    {name:'ヴォルテュス',    flavor:'光を放ちながら、すべてを渦に飲み込む。答えを求めるほど深みにはまり、気づけば動けなくなっている。'},
+    {name:'アイズラー',      flavor:'暗闇から他者の目だけを見つめる獣。視線が怖くて前に出られない。'},
+    {name:'サーキュラス',    flavor:'同じ場所を何千周も歩いた。前に進む道があることを、もう知らない。'},
+    {name:'ヴォックスシーフ',flavor:'言いたい言葉を袋に詰めて逃げる泥棒。あなたの声も狙っている。'},
+    {name:'スタグナイト',    flavor:'重すぎる鎧を脱げない見習い騎士。最初の一歩の重さを誰も知らない。'},
+  ],
+  hard:[
+    {name:'フラクトドレイク', flavor:'放った言葉を空中で砕く翼竜。本音が届く前に、すべて粉々にする。'},
+    {name:'ルミナント将軍',  flavor:'同じ記憶を何千回も反芻する将軍。過去の反省が未来を縛る鎖になった。'},
+    {name:'マスクレイス',    flavor:'仮面の下にまた仮面。本当の顔を見せた瞬間に、消えてしまうと信じている。'},
+    {name:'リジェクタス',    flavor:'断られた記憶を棘にして纏う鬼。その痛みを他者にも与えようとする。'},
+    {name:'エコーレイス',    flavor:'過去の失敗が人の形をして現れた亡霊。鏡の中にしか存在できない。'},
+  ],
+  boss:[
+    {name:'大魔王モクネン',  flavor:'すべての沈黙の根源。なおたかの15週間の対話が、唯一の弱点となる。'},
+  ],
+};
+const DIFF_XP = {easy:10, medium:20, hard:35, boss:35};
+const BADGE_HTML = {
+  easy:  '<span class="badge badge-easy">🟢 Easy</span>',
+  medium:'<span class="badge badge-medium">🟡 Medium</span>',
+  hard:  '<span class="badge badge-hard">🔴 Hard</span>',
+  boss:  '<span class="badge badge-boss">🏰 ラスボス</span>',
+};
+
+// ─────────────────────────────────────
+// STATE
+// ─────────────────────────────────────
+
+let G;
+
+function defaultState() {
+  return {
+    initialized: false,
+    gasEndpoint: '',
+    startDate: null,
+    startDayOfWeek: null,
+    currentRun: 1,
+    currentWeek: 1,
+    weekPhase: 'show',
+    stats: {...INITIAL_STATS},
+    xp: 0,
+    totalXp: 0,
+    streak: 0,
+    maxStreak: 0,
+    weeklyAssigned: [],   // [id, ...]
+    weeklySelected: [],   // [id, ...]
+    weeklyResults: {},    // {id: {status, memo}}
+    challengeFlowIndex: 0,
+    challengeHistory: [], // [{run,week,challenge_id,challenge_name,difficulty,status,memo,ts}]
+    usedIds: {},          // {runStr: [id, ...]}
+    lastWeekIds: [],
+    prevRunSummary: null,
+  };
+}
+
+function load()   { try { G = JSON.parse(localStorage.getItem('kotoba_v3')||'null') || defaultState(); } catch { G = defaultState(); } }
+function save()   { localStorage.setItem('kotoba_v3', JSON.stringify(G)); }
+function reset()  { localStorage.removeItem('kotoba_v3'); localStorage.removeItem('kotoba_pending'); G = defaultState(); }
+
+// ─────────────────────────────────────
+// ROUTING
+// ─────────────────────────────────────
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const inGame = G.initialized && id !== 'screen-title' && id !== 'screen-setup' && id !== 'screen-newgame';
+  document.getElementById('navbar').classList.toggle('active', inGame);
+  if (id === 'screen-map')    renderMap();
+  if (id === 'screen-status') renderStatus();
+  if (id === 'screen-log')    renderLog();
+  if (id === 'screen-quest')  renderQuest();
+}
+
+function navTo(id, btn) {
+  showScreen(id);
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b === btn));
+}
+
+function activeNavBtn(id) {
+  const navMap = {
+    'screen-map':0,'screen-quest':1,'screen-status':2,'screen-log':3
+  };
+  const idx = navMap[id];
+  if (idx !== undefined) {
+    const btns = document.querySelectorAll('.nav-btn');
+    btns.forEach((b,i) => b.classList.toggle('active', i === idx));
+  }
+}
+
+// ─────────────────────────────────────
+// WEEK CALC
+// ─────────────────────────────────────
+
+function computeCurrentWeek() {
+  if (!G.startDate) return 1;
+  const days = Math.floor((Date.now() - new Date(G.startDate).getTime()) / 86400000);
+  return Math.min(Math.floor(days / 7) + 1, 15);
+}
+
+function daysUntilNextWeek() {
+  if (!G.startDate) return 7;
+  const days = Math.floor((Date.now() - new Date(G.startDate).getTime()) / 86400000);
+  return Math.max(0, (Math.floor(days / 7) + 1) * 7 - days);
+}
+
+function travelText(week) {
+  for (const [range, text] of Object.entries(TRAVEL_TEXTS)) {
+    if (inRange(week, range)) return text;
+  }
+  return '';
+}
+function gateText(week, days) {
+  for (const [range, fn] of Object.entries(GATE_FNS)) {
+    if (inRange(week, range)) return fn(days);
+  }
+  return `残り ${days} 日。`;
+}
+function inRange(w, r) {
+  const parts = r.split('-').map(Number);
+  return parts.length === 2 ? w >= parts[0] && w <= parts[1] : w === parts[0];
+}
+
+// ─────────────────────────────────────
+// CHALLENGE ASSIGNMENT
+// ─────────────────────────────────────
+
+function pickFrom(pool, used, last) {
+  const avail = pool.filter(c => !used.includes(c.id));
+  const src = avail.length ? avail : pool;
+  const preferred = src.filter(c => !last.includes(c.id));
+  const final = preferred.length ? preferred : src;
+  return final[Math.floor(Math.random() * final.length)];
+}
+
+function assignWeeklyChallenges() {
+  const key = String(G.currentRun);
+  if (!G.usedIds[key]) G.usedIds[key] = [];
+  const used = G.usedIds[key];
+  const last = G.lastWeekIds || [];
+
+  const ePool = CHALLENGES.filter(c => c.d === 'easy');
+  const mPool = CHALLENGES.filter(c => c.d === 'medium');
+  const hPool = CHALLENGES.filter(c => c.d === 'hard');
+
+  const e1 = pickFrom(ePool, used, last);
+  const e2 = pickFrom(ePool.filter(c => c.id !== e1.id), used, last);
+  const m1 = pickFrom(mPool, used, last);
+  const h1 = G.currentWeek === 15
+    ? {id:0, d:'boss', name:'大魔王モクネンとの最終決戦'}
+    : pickFrom(hPool, used, last);
+
+  const picked = [e1, e2, m1, h1];
+  G.weeklyAssigned = picked.map(c => c.id);
+  picked.forEach(c => { if (c.id && !used.includes(c.id)) used.push(c.id); });
+  G.usedIds[key] = used;
+  save();
+}
+
+function getChallenge(id) {
+  if (id === 0) return {id:0, d:'boss', name:'大魔王モクネンとの最終決戦'};
+  return CHALLENGES.find(c => c.id === id) || {id, d:'easy', name:'不明なチャレンジ'};
+}
+
+function randomEnemy(diff) {
+  const pool = ENEMY_POOL[diff] || ENEMY_POOL.easy;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ─────────────────────────────────────
+// XP & LEVEL
+// ─────────────────────────────────────
+
+function levelOf(xp) {
+  let info = LEVELS[0];
+  for (const l of LEVELS) { if (xp >= l.xp) info = l; else break; }
+  return info;
+}
+function nextLevel(xp) { return LEVELS.find(l => l.xp > xp) || null; }
+function runPrefix(run) { return run <= 1 ? '' : RUN_PREFIX[Math.min(run, RUN_PREFIX.length-1)]; }
+
+function addXP(amount, skillKey) {
+  const before = levelOf(G.xp);
+  G.xp += amount;
+  G.totalXp += amount;
+  save();
+  const sk = SKILLS[skillKey] || {};
+  showSkillToast(sk.name || `+${amount} XP`, `+${amount} XP`);
+  const after = levelOf(G.xp);
+  if (after.lv > before.lv) setTimeout(() => showLevelUp(after), 700);
+}
+
+function showSkillToast(name, xpStr) {
+  const t = document.getElementById('skill-toast');
+  document.getElementById('skill-name').textContent = name;
+  document.getElementById('skill-xp').textContent = xpStr;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function showLevelUp(info) {
+  document.getElementById('levelup-subtitle').textContent = runPrefix(G.currentRun) + info.title;
+  document.getElementById('levelup-overlay').classList.add('show');
+  flash();
+}
+function closeLevelUp() { document.getElementById('levelup-overlay').classList.remove('show'); }
+
+function flash() {
+  const f = document.getElementById('flash-overlay');
+  f.style.opacity = '0.7';
+  setTimeout(() => { f.style.opacity = '0'; }, 220);
+}
+
+// ─────────────────────────────────────
+// PARTICLES
+// ─────────────────────────────────────
+
+function spawnParticles(x, y) {
+  const c = document.getElementById('particle-container');
+  const colors = ['#f0c060','#9b6dff','#5bcc7a','#f0a030','#e05050','#fff','#ffaaff'];
+  for (let i = 0; i < 24; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 60 + Math.random() * 130;
+    p.style.cssText = `left:${x}px;top:${y}px;background:${colors[i%colors.length]};`
+      + `--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px`;
+    c.appendChild(p);
+    setTimeout(() => p.remove(), 1000);
+  }
+}
+
+// ─────────────────────────────────────
+// CONFIRM DIALOG
+// ─────────────────────────────────────
+
+let _dialogResolve = null;
+function confirmDialog(msg) {
+  return new Promise(resolve => {
+    _dialogResolve = resolve;
+    document.getElementById('dialog-msg').textContent = msg;
+    document.getElementById('dialog-overlay').classList.add('show');
+  });
+}
+document.getElementById('dialog-ok').onclick = () => {
+  document.getElementById('dialog-overlay').classList.remove('show');
+  if (_dialogResolve) { _dialogResolve(true); _dialogResolve = null; }
+};
+document.getElementById('dialog-cancel').onclick = () => {
+  document.getElementById('dialog-overlay').classList.remove('show');
+  if (_dialogResolve) { _dialogResolve(false); _dialogResolve = null; }
+};
+
+// ─────────────────────────────────────
+// GAS API
+// ─────────────────────────────────────
+
+async function gasPost(payload) {
+  if (!G.gasEndpoint) return;
+  try {
+    await fetch(G.gasEndpoint, {method:'POST', body: JSON.stringify(payload)});
+  } catch {
+    const q = JSON.parse(localStorage.getItem('kotoba_pending')||'[]');
+    q.push(payload);
+    localStorage.setItem('kotoba_pending', JSON.stringify(q));
+  }
+}
+async function flushPending() {
+  if (!G.gasEndpoint) return;
+  const q = JSON.parse(localStorage.getItem('kotoba_pending')||'[]');
+  if (!q.length) return;
+  const failed = [];
+  for (const p of q) {
+    try { await fetch(G.gasEndpoint, {method:'POST', body:JSON.stringify(p)}); }
+    catch { failed.push(p); }
+  }
+  localStorage.setItem('kotoba_pending', JSON.stringify(failed));
+}
+window.addEventListener('online', flushPending);
+
+// ─────────────────────────────────────
+// RENDER: MAP
+// ─────────────────────────────────────
+
+function renderMap() {
+  const realWeek = computeCurrentWeek();
+  if (realWeek > G.currentWeek && G.weekPhase === 'gate') {
+    G.currentWeek = realWeek;
+    G.weekPhase = 'show';
+    G.weeklyAssigned = [];
+    G.weeklySelected = [];
+    G.weeklyResults = {};
+    G.challengeFlowIndex = 0;
+    save();
+  }
+
+  const info = levelOf(G.xp);
+  const next = nextLevel(G.xp);
+  const prefix = runPrefix(G.currentRun);
+
+  document.getElementById('map-lv').textContent = `Lv.${info.lv}`;
+  document.getElementById('map-title').textContent = prefix + info.title;
+  document.getElementById('map-run').textContent = `Run ${G.currentRun}`;
+
+  const xpPct = next ? Math.round((G.xp - info.xp) / (next.xp - info.xp) * 100) : 100;
+  document.getElementById('map-xpbar').style.width = xpPct + '%';
+  document.getElementById('map-xptext').textContent = next
+    ? `${G.xp} / ${next.xp} XP （次まで ${next.xp - G.xp} XP）`
+    : `${G.xp} XP（MAX）`;
+
+  const streak = document.getElementById('map-streak');
+  if (G.streak > 0) { streak.style.display='block'; streak.textContent=`🔥 ${G.streak}週連続達成中！`; }
+  else streak.style.display = 'none';
+
+  const info2 = document.getElementById('map-week-info');
+  info2.textContent = G.weekPhase === 'gate'
+    ? `Week ${G.currentWeek} 終了 ― 次の週まで ${daysUntilNextWeek()} 日`
+    : `現在 Week ${G.currentWeek}  ― ${travelText(G.currentWeek)}`;
+
+  const grid = document.getElementById('map-grid');
+  grid.innerHTML = '';
+  for (let w = 1; w <= 15; w++) {
+    const isCurrent  = w === G.currentWeek;
+    const isDone     = w < G.currentWeek || (isCurrent && G.weekPhase === 'gate');
+    const isLocked   = w > G.currentWeek;
+    const icon = w===15 ? '🏰' : isDone&&!isCurrent ? '✅' : isCurrent ? '⚔️' : '🔒';
+    const cls  = isDone&&!isCurrent ? 'completed' : isCurrent ? 'current' : isLocked ? 'locked' : 'unlocked';
+    const lbl  = isDone&&!isCurrent ? '完了' : isCurrent ? '現在地' : '未解放';
+
+    const node = document.createElement('div');
+    node.className = `week-node ${cls}`;
+    node.innerHTML = `<div class="week-num">Week ${w}</div><div class="week-icon">${icon}</div><div class="week-label">${lbl}</div>`;
+    if (isCurrent && G.weekPhase !== 'gate') {
+      node.onclick = () => { showScreen('screen-quest'); activeNavBtn('screen-quest'); };
+    }
+    grid.appendChild(node);
+  }
+}
+
+// ─────────────────────────────────────
+// RENDER: QUEST
+// ─────────────────────────────────────
+
+function renderQuest() {
+  document.getElementById('quest-week-title').textContent = `Week ${G.currentWeek} の旅`;
+  showPhase(G.weekPhase);
+}
+
+function showPhase(phase) {
+  G.weekPhase = phase;
+  save();
+  const phaseMap = {
+    show:'phase-show', select:'phase-select', challenge:'phase-challenge',
+    remnant:'phase-remnant', gate:'phase-gate', clear:'phase-clear'
+  };
+  document.querySelectorAll('.quest-phase').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(phaseMap[phase]);
+  if (el) el.classList.add('active');
+
+  if (phase === 'show')      renderShow();
+  if (phase === 'select')    renderSelect();
+  if (phase === 'challenge') renderChallenge();
+  if (phase === 'remnant')   renderRemnant();
+  if (phase === 'gate')      renderGate();
+  if (phase === 'clear')     renderClear();
+}
+
+function renderShow() {
+  document.getElementById('travel-text').textContent = travelText(G.currentWeek);
+  if (!G.weeklyAssigned.length) assignWeeklyChallenges();
+  const container = document.getElementById('challenge-cards-show');
+  container.innerHTML = '';
+  G.weeklyAssigned.forEach(id => {
+    const c = getChallenge(id);
+    const enemy = randomEnemy(c.d);
+    const div = document.createElement('div');
+    div.className = 'challenge-card';
+    div.innerHTML = `
+      <div class="challenge-card-header">
+        ${BADGE_HTML[c.d]||BADGE_HTML.easy}
+        <span class="challenge-name">${c.name}</span>
+      </div>
+      <div class="challenge-enemy">⚔️ ${enemy.name}</div>
+      <div class="enemy-popup">「${enemy.flavor}」</div>`;
+    container.appendChild(div);
+  });
+}
+
+function renderSelect() {
+  const container = document.getElementById('challenge-cards-select');
+  container.innerHTML = '';
+  G.weeklyAssigned.forEach(id => {
+    const c = getChallenge(id);
+    const isChecked = G.weeklySelected.includes(id);
+    const div = document.createElement('div');
+    div.className = 'challenge-card' + (isChecked ? ' selected' : '');
+    div.innerHTML = `
+      <div class="challenge-card-header">
+        <input type="checkbox" class="challenge-check" data-id="${id}" ${isChecked?'checked':''}>
+        ${BADGE_HTML[c.d]||BADGE_HTML.easy}
+        <span class="challenge-name">${c.name}</span>
+      </div>`;
+    div.querySelector('input').onchange = e => {
+      const cid = Number(e.target.dataset.id);
+      if (e.target.checked) { if (!G.weeklySelected.includes(cid)) G.weeklySelected.push(cid); }
+      else G.weeklySelected = G.weeklySelected.filter(x => x !== cid);
+      div.classList.toggle('selected', e.target.checked);
+      save();
+    };
+    container.appendChild(div);
+  });
+}
+
+function renderChallenge() {
+  const idx = G.challengeFlowIndex;
+  const ids = G.weeklySelected;
+  if (idx >= ids.length) { showPhase('remnant'); return; }
+
+  const id = ids[idx];
+  const c  = getChallenge(id);
+  const result = G.weeklyResults[id];
+  const area = document.getElementById('challenge-flow-area');
+  area.innerHTML = '';
+
+  const div = document.createElement('div');
+  div.className = 'flow-card';
+  div.innerHTML = `
+    <div class="flow-header">
+      <img class="flow-player" src="assets/player.png" alt="なおたか"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+      <div class="flow-player-fallback">🐐</div>
+      <div>
+        ${BADGE_HTML[c.d]||BADGE_HTML.easy}
+        <div style="font-size:.92rem;font-weight:700;margin-top:4px">${c.name}</div>
+      </div>
+    </div>
+    ${result ? resultSummaryHTML(result, idx, ids.length) : resultButtonsHTML()}`;
+  area.appendChild(div);
+
+  if (!result) {
+    div.querySelector('#btn-achieved').onclick = async e => {
+      const rect = e.target.getBoundingClientRect();
+      spawnParticles(rect.left + rect.width/2, rect.top + rect.height/2);
+      const xp = DIFF_XP[c.d] || 10;
+      const entry = {
+        run: G.currentRun, week: G.currentWeek,
+        challenge_id: c.id, challenge_name: c.name, difficulty: c.d,
+        status: 'achieved', memo: '', ts: new Date().toISOString()
+      };
+      G.weeklyResults[id] = {status:'achieved', memo:''};
+      G.challengeHistory.push(entry);
+      G.challengeFlowIndex++;
+      save();
+      addXP(xp, c.d);
+      gasPost({action:'save_challenge', ...entry, timestamp:entry.ts});
+      checkBonuses();
+      setTimeout(() => renderChallenge(), 2100);
+    };
+
+    div.querySelector('#btn-failed').onclick = () => {
+      div.querySelector('.memo-area').classList.add('open');
+    };
+    div.querySelector('#btn-save-memo').onclick = async () => {
+      const memo = div.querySelector('#memo-input').value.trim();
+      const entry = {
+        run: G.currentRun, week: G.currentWeek,
+        challenge_id: c.id, challenge_name: c.name, difficulty: c.d,
+        status: 'failed', memo, ts: new Date().toISOString()
+      };
+      G.weeklyResults[id] = {status:'failed', memo};
+      G.challengeHistory.push(entry);
+      G.challengeFlowIndex++;
+      save();
+      if (memo) addXP(5, 'memo');
+      gasPost({action:'save_challenge', ...entry, timestamp:entry.ts});
+      renderChallenge();
+    };
+  } else {
+    const nextBtn = div.querySelector('#btn-next');
+    if (nextBtn) nextBtn.onclick = () => { G.challengeFlowIndex++; save(); renderChallenge(); };
+  }
+}
+
+function resultButtonsHTML() {
+  return `
+    <div class="result-btns">
+      <button class="btn btn-gold" id="btn-achieved">✅ 道を切り開いた！</button>
+      <button class="btn btn-danger" id="btn-failed">😔 この道は、まだ遠い…</button>
+    </div>
+    <div class="memo-area">
+      <p class="dim" style="margin-bottom:8px;line-height:1.7">
+        なぜ、この道を通れなかったのか。記録に残しておけ。それが次の力になる。
+      </p>
+      <textarea id="memo-input" placeholder="内省メモを入力…"></textarea>
+      <div class="gap"></div>
+      <button class="btn btn-accent" id="btn-save-memo">💭 記録して前へ進む (+5XP)</button>
+    </div>`;
+}
+
+function resultSummaryHTML(result, idx, total) {
+  const icon = result.status === 'achieved' ? '✅' : '😔';
+  const label = result.status === 'achieved' ? '道を切り開いた！' : 'まだ遠い道だった…';
+  const nextLabel = idx + 1 < total ? '次の強敵へ →' : '振り返りへ進む →';
+  return `
+    <div style="text-align:center;font-size:1.2rem;margin-bottom:10px">${icon} ${label}</div>
+    ${result.memo ? `<p class="dim" style="font-size:.82rem;margin-bottom:10px">💭 ${result.memo}</p>` : ''}
+    <button class="btn btn-accent" id="btn-next">${nextLabel}</button>`;
+}
+
+function checkBonuses() {
+  const ids = G.weeklySelected;
+  if (!ids.length) return;
+  const allDone     = ids.every(id => G.weeklyResults[id]);
+  const allAchieved = ids.every(id => G.weeklyResults[id]?.status === 'achieved');
+  if (!allDone || !allAchieved) return;
+
+  setTimeout(() => addXP(15, 'allbonus'), 500);
+  const all4 = G.weeklyAssigned.length === 4
+    && G.weeklyAssigned.every(id => G.weeklyResults[id]?.status === 'achieved');
+  if (all4) setTimeout(() => addXP(30, 'fullbonus'), 1000);
+}
+
+function renderRemnant() {
+  const remnant = G.weeklyAssigned.filter(id => !G.weeklySelected.includes(id));
+  const list = document.getElementById('remnant-list');
+  list.innerHTML = '';
+  if (!remnant.length) { showPhase('gate'); return; }
+  remnant.forEach(id => {
+    const c = getChallenge(id);
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.cssText = 'padding:10px;display:flex;align-items:flex-start;gap:8px';
+    div.innerHTML = `${BADGE_HTML[c.d]||BADGE_HTML.easy}<span style="font-size:.85rem;line-height:1.5">${c.name}</span>`;
+    list.appendChild(div);
+  });
+}
+
+function renderGate() {
+  updateStreak();
+  const days = daysUntilNextWeek();
+  document.getElementById('gate-text').textContent = gateText(G.currentWeek, days);
+}
+
+function updateStreak() {
+  const ids = G.weeklySelected;
+  const allAchieved = ids.length > 0 && ids.every(id => G.weeklyResults[id]?.status === 'achieved');
+  if (allAchieved) { G.streak++; G.maxStreak = Math.max(G.maxStreak, G.streak); }
+  else G.streak = 0;
+  G.lastWeekIds = [...G.weeklyAssigned];
+  save();
+}
+
+function renderClear() {
+  const history = G.challengeHistory.filter(h => h.run === G.currentRun);
+  const achievedIds = new Set(history.filter(h => h.status === 'achieved').map(h => h.challenge_id));
+  const unachieved = CHALLENGES.filter(c => !achievedIds.has(c.id));
+
+  const section = document.getElementById('remaining-section');
+  const list = document.getElementById('remaining-list');
+  if (unachieved.length) {
+    section.style.display = 'block';
+    list.innerHTML = '';
+    const show = unachieved.slice(0, 10);
+    show.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'remaining-item';
+      div.innerHTML = `${BADGE_HTML[c.d]||BADGE_HTML.easy}<span>${c.name}</span>`;
+      list.appendChild(div);
+    });
+    if (unachieved.length > 10) {
+      const more = document.createElement('div');
+      more.className = 'dim';
+      more.style.marginTop = '6px';
+      more.textContent = `… 他 ${unachieved.length - 10} 体`;
+      list.appendChild(more);
+    }
+  } else {
+    section.style.display = 'none';
+  }
+
+  // save run summary
+  const sel = history.filter(h => h.status !== 'skipped');
+  const ach = history.filter(h => h.status === 'achieved');
+  const fai = history.filter(h => h.status === 'failed');
+  const memoCount = fai.filter(h => h.memo && h.memo.trim()).length;
+  const hardSel = sel.filter(h => h.difficulty === 'hard').length;
+  const hardAch = ach.filter(h => h.difficulty === 'hard').length;
+  gasPost({
+    action: 'save_run_summary',
+    run: G.currentRun,
+    total_achieved: ach.length,
+    total_failed:   fai.length,
+    total_skipped:  history.filter(h => h.status === 'skipped').length,
+    hard_achieved:  hardAch,
+    hard_selected:  hardSel,
+    memo_count:     memoCount,
+    max_streak:     G.maxStreak,
+    total_xp_this_run: G.xp,
+    completed_date: new Date().toISOString(),
+  });
+}
+
+// ─────────────────────────────────────
+// RENDER: STATUS
+// ─────────────────────────────────────
+
+function renderStatus() {
+  const info = levelOf(G.xp);
+  const next = nextLevel(G.xp);
+  const prefix = runPrefix(G.currentRun);
+  document.getElementById('st-title').textContent = prefix + info.title;
+  document.getElementById('st-run').textContent = `Run ${G.currentRun} ／ Week ${G.currentWeek}`;
+  const xpPct = next ? Math.round((G.xp - info.xp) / (next.xp - info.xp) * 100) : 100;
+  document.getElementById('st-xpbar').style.width = xpPct + '%';
+  document.getElementById('st-xptext').textContent = next ? `${G.xp} / ${next.xp} XP` : `${G.xp} XP（MAX）`;
+
+  const rows = document.getElementById('status-rows');
+  rows.innerHTML = '';
+  Object.entries(G.stats).forEach(([key, val]) => {
+    const highlight = key === 'emo' || key === 'self';
+    const row = document.createElement('div');
+    row.className = 'status-row' + (highlight ? ' hl-stat' : '');
+    row.innerHTML = `
+      <div class="stat-name">${STAT_LABELS[key]}</div>
+      <div class="stat-current">${val}</div>
+      <div class="stat-bar-h"><div class="stat-bar-h-fill" style="width:${val}%"></div></div>`;
+    rows.appendChild(row);
+  });
+
+  const hist = G.challengeHistory.filter(h => h.run === G.currentRun);
+  const ach = hist.filter(h => h.status === 'achieved').length;
+  const fai = hist.filter(h => h.status === 'failed').length;
+  document.getElementById('status-achievements').innerHTML =
+    `累計XP：${G.totalXp} XP<br>`
+    + `今周回達成：${ach} チャレンジ<br>`
+    + `今周回未達：${fai} チャレンジ<br>`
+    + `現在ストリーク：${G.streak} 週<br>`
+    + `最大ストリーク：${G.maxStreak} 週`;
+}
+
+// ─────────────────────────────────────
+// RENDER: LOG
+// ─────────────────────────────────────
+
+function renderLog() {
+  const body = document.getElementById('log-body');
+  body.innerHTML = '';
+  if (!G.challengeHistory.length) {
+    body.innerHTML = '<div class="dim center" style="padding:48px">まだ記録がありません。</div>';
+    return;
+  }
+  const byWeek = {};
+  G.challengeHistory.forEach(h => {
+    const key = `${String(h.run).padStart(3,'0')}-${String(h.week).padStart(2,'0')}`;
+    if (!byWeek[key]) byWeek[key] = {run:h.run, week:h.week, items:[]};
+    byWeek[key].items.push(h);
+  });
+  Object.keys(byWeek).sort().reverse().forEach(key => {
+    const {run, week, items} = byWeek[key];
+    const ach = items.filter(i => i.status === 'achieved').length;
+    const block = document.createElement('div');
+    block.className = 'log-week';
+    block.innerHTML = `
+      <div class="log-week-header" onclick="this.nextElementSibling.classList.toggle('open')">
+        <span style="color:var(--gold)">Run ${run} / Week ${week}</span>
+        <span class="dim" style="margin-left:auto">✅ ${ach}/${items.length}</span>
+        <span style="margin-left:8px;color:var(--dim)">▾</span>
+      </div>
+      <div class="log-week-body">
+        ${items.map(i => `
+          <div class="log-entry">
+            <span class="log-status">${i.status==='achieved'?'✅':i.status==='failed'?'😔':'⏭'}</span>
+            <div>
+              <div>${i.challenge_name||''}</div>
+              ${i.memo ? `<div class="log-memo">💭 ${i.memo}</div>` : ''}
+            </div>
+          </div>`).join('')}
+      </div>`;
+    body.appendChild(block);
+  });
+}
+
+// ─────────────────────────────────────
+// NEW GAME+
+// ─────────────────────────────────────
+
+function calcCorrections() {
+  const hist = G.challengeHistory.filter(h => h.run === G.currentRun);
+  const sel  = hist.filter(h => h.status !== 'skipped');
+  const ach  = hist.filter(h => h.status === 'achieved');
+  const fai  = hist.filter(h => h.status === 'failed');
+  const hSel = sel.filter(h => h.difficulty === 'hard');
+  const hAch = ach.filter(h => h.difficulty === 'hard');
+  const memoCount = fai.filter(h => h.memo && h.memo.trim()).length;
+
+  const totalRate = sel.length  ? ach.length / sel.length   : 0;
+  const hardRate  = hSel.length ? hAch.length / hSel.length : 0;
+  const memoRate  = fai.length  ? memoCount / fai.length     : 0;
+
+  const stats = {...G.stats};
+  const corrections = [];
+
+  function apply(key, delta, reason) {
+    const cap = key === 'self' ? 15 : 8;
+    const d = Math.max(-cap, Math.min(cap, delta));
+    const next = Math.max(1, stats[key] + d);
+    corrections.push({key, label:STAT_LABELS[key], delta:d, from:stats[key], to:next, reason});
+    stats[key] = next;
+  }
+
+  if (totalRate >= 0.8)  apply('self', +8, '全体達成率≥80%');
+  else if (totalRate < 0.4) apply('self', -5, '全体達成率<40%');
+  if (hardRate  >= 0.5)  apply('self', +6, 'Hard達成率≥50%');
+  else if (hardRate  < 0.25) apply('con', -3, 'Hard達成率<25%');
+  if (memoRate  >= 0.7)  apply('emo',  +3, '内省メモ率≥70%');
+  if (G.maxStreak >= 5)  apply('con',  +4, 'ストリーク≥5週');
+  else if (G.maxStreak <= 1) apply('agi', -3, 'ストリーク≤1週');
+
+  return {stats, corrections, totalRate, hardRate, memoRate};
+}
+
+function buildDemonScript(totalRate, hardRate, memoRate) {
+  const lines = [
+    '…またお前か、なおたか。\n懲りない勇者だ。フフ…来るとは思っていたぞ。\n\n前回の旅の記録が、余の目にも届いている。',
+  ];
+  if (totalRate >= 0.7) lines.push('\n「チッ…ずいぶんと精が出るではないか。不快だ。」');
+  if (hardRate  < 0.25) lines.push('\n「愚か者め。強敵を前に足がすくんだのを、余は見ていたぞ。\n　今回もその臆病さが命取りになる。」');
+  if (memoRate  >= 0.7) lines.push('\n「…舌打ち。省みる力が増している。厄介な勇者だ。」');
+  if (G.maxStreak >= 5) lines.push('\n「フン…粘り腰だけは認めてやろう。だが、それだけだ。」');
+  lines.push('\nさあ、また始めるがいい。\n今度こそ、お前の旅はここで終わらせてやる。\n…待っているぞ、なおたか。');
+  return lines.join('');
+}
+
+function startNewGameScreen() {
+  showScreen('screen-newgame');
+  document.getElementById('correction-card').style.display = 'none';
+  document.getElementById('btn-start-newgame').style.display = 'none';
+  document.getElementById('btn-close-eyes').style.display = 'none';
+
+  const {stats, corrections, totalRate, hardRate, memoRate} = calcCorrections();
+  const script = buildDemonScript(totalRate, hardRate, memoRate);
+
+  const el = document.getElementById('demon-text');
+  el.textContent = '';
+  let i = 0;
+  const iv = setInterval(() => {
+    el.textContent += script[i++];
+    if (i >= script.length) {
+      clearInterval(iv);
+      const cc = document.getElementById('correction-card');
+      cc.style.display = 'block';
+      const cr = document.getElementById('correction-rows');
+      cr.innerHTML = '';
+      corrections.forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'correction-row';
+        const sign = c.delta >= 0 ? '+' : '';
+        row.innerHTML = `
+          <span class="${c.delta>=0?'c-plus':'c-minus'}">${c.delta>=0?'✨':'⚠️'}</span>
+          <span class="c-label">${c.label}</span>
+          <span style="color:var(--dim);font-size:.8rem">${c.from} → ${c.to}（${sign}${c.delta}）</span>`;
+        cr.appendChild(row);
+      });
+      G.prevRunSummary = {stats};
+      save();
+      document.getElementById('btn-start-newgame').style.display = 'block';
+      document.getElementById('btn-close-eyes').style.display = 'block';
+    }
+  }, 28);
+}
+
+function execNewGame() {
+  const newStats = G.prevRunSummary ? G.prevRunSummary.stats : {...INITIAL_STATS};
+  const today = new Date().toISOString().slice(0,10);
+  G.currentRun++;
+  G.currentWeek    = 1;
+  G.weekPhase      = 'show';
+  G.stats          = newStats;
+  G.xp             = 0;
+  G.streak         = 0;
+  G.maxStreak      = 0;
+  G.weeklyAssigned = [];
+  G.weeklySelected = [];
+  G.weeklyResults  = {};
+  G.challengeFlowIndex = 0;
+  G.lastWeekIds    = [];
+  G.usedIds        = {};
+  G.startDate      = today;
+  G.startDayOfWeek = new Date().getDay();
+  G.prevRunSummary = null;
+  save();
+  gasPost({action:'save_config', current_run:G.currentRun, start_date:today,
+    start_day_of_week:G.startDayOfWeek});
+  showScreen('screen-map');
+  activeNavBtn('screen-map');
+}
+
+// ─────────────────────────────────────
+// SETUP RENDER
+// ─────────────────────────────────────
+
+function renderSetupStats() {
+  const grid = document.getElementById('setup-stats');
+  grid.innerHTML = '';
+  Object.entries(INITIAL_STATS).forEach(([key, val]) => {
+    const hl = key === 'emo' || key === 'self';
+    const div = document.createElement('div');
+    div.className = 'stat-item' + (hl ? ' highlight-stat-item' : '');
+    div.innerHTML = `
+      <div class="stat-label">${STAT_LABELS[key]}</div>
+      <div class="stat-val">${val}/100</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:${val}%"></div></div>`;
+    grid.appendChild(div);
+  });
+}
+
+// ─────────────────────────────────────
+// EVENT WIRING
+// ─────────────────────────────────────
+
+document.getElementById('btn-newgame').onclick = () => {
+  renderSetupStats();
+  showScreen('screen-setup');
+};
+
+document.getElementById('btn-continue').onclick = () => {
+  showScreen('screen-map');
+  activeNavBtn('screen-map');
+};
+
+document.getElementById('btn-reset-data').onclick = async () => {
+  const ok = await confirmDialog('データをすべて削除しますか？この操作は取り消せません。');
+  if (!ok) return;
+  reset();
+  location.reload();
+};
+
+document.getElementById('btn-start-journey').onclick = async () => {
+  const endpoint = document.getElementById('gas-endpoint').value.trim();
+  const today = new Date().toISOString().slice(0,10);
+  G.initialized    = true;
+  G.startDate      = today;
+  G.startDayOfWeek = new Date().getDay();
+  G.gasEndpoint    = endpoint;
+  G.stats          = {...INITIAL_STATS};
+  assignWeeklyChallenges();
+  save();
+  if (endpoint) {
+    gasPost({action:'save_config', player_name:'なおたか', start_date:today,
+      start_day_of_week:G.startDayOfWeek, current_run:1, total_xp:0});
+  }
+  showScreen('screen-map');
+  activeNavBtn('screen-map');
+};
+
+document.getElementById('btn-to-select').onclick = () => showPhase('select');
+
+document.getElementById('btn-sortie').onclick = async () => {
+  if (!G.weeklySelected.length) {
+    await confirmDialog('少なくとも1つの強敵を選んでください。');
+    return;
+  }
+  const ok = await confirmDialog('この強敵と向き合いますか？一度決めたら、引き返せないぞ。');
+  if (!ok) return;
+  G.challengeFlowIndex = 0;
+  save();
+  showPhase('challenge');
+};
+
+document.getElementById('btn-fight-remnant').onclick = () => {
+  const remnant = G.weeklyAssigned.filter(id => !G.weeklySelected.includes(id));
+  if (!remnant.length) { showPhase('gate'); return; }
+  G.weeklySelected = [...G.weeklySelected, ...remnant];
+  G.challengeFlowIndex = G.weeklySelected.indexOf(remnant[0]);
+  save();
+  showPhase('challenge');
+};
+
+document.getElementById('btn-skip-remnant').onclick = () => {
+  const remnant = G.weeklyAssigned.filter(id => !G.weeklySelected.includes(id));
+  remnant.forEach(id => {
+    const c = getChallenge(id);
+    G.weeklyResults[id] = {status:'skipped', memo:''};
+    G.challengeHistory.push({
+      run: G.currentRun, week: G.currentWeek,
+      challenge_id: c.id, challenge_name: c.name, difficulty: c.d,
+      status: 'skipped', memo: '', ts: new Date().toISOString()
+    });
+  });
+  save();
+  if (G.currentWeek >= 15) showPhase('clear');
+  else showPhase('gate');
+};
+
+document.getElementById('btn-back-map').onclick   = () => { showScreen('screen-map'); activeNavBtn('screen-map'); };
+document.getElementById('btn-gate-map').onclick   = () => { showScreen('screen-map'); activeNavBtn('screen-map'); };
+document.getElementById('btn-clear-map').onclick  = () => { showScreen('screen-map'); activeNavBtn('screen-map'); };
+document.getElementById('btn-newgame-plus').onclick = startNewGameScreen;
+document.getElementById('btn-start-newgame').onclick = execNewGame;
+document.getElementById('btn-close-eyes').onclick  = () => { showScreen('screen-map'); activeNavBtn('screen-map'); };
+
+// ─────────────────────────────────────
+// INIT
+// ─────────────────────────────────────
+
+function init() {
+  load();
+
+  // iOS PWA guide
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode:standalone)').matches;
+  if (isIos && !isStandalone) document.getElementById('pwa-guide').style.display = 'block';
+
+  if (G.initialized) {
+    document.getElementById('btn-continue').style.display    = 'block';
+    document.getElementById('btn-reset-data').style.display  = 'block';
+    document.getElementById('btn-newgame').textContent       = '✨ 最初からやり直す';
+  }
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  }
+}
+
+init();
+</script>
+</body>
+</html>
