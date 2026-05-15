@@ -64,7 +64,7 @@ h2{font-family:'Zen Antique',serif;color:var(--gold);font-size:1.05rem;margin-bo
 .title-logo h1{font-size:1.8rem;line-height:1.4;margin-bottom:6px}
 .title-sub{color:var(--dim);font-size:.85rem;letter-spacing:.1em;text-align:center}
 .title-player{text-align:center;animation:float 3s ease-in-out infinite}
-.title-player .player-img{width:180px;height:180px;margin:0 auto}
+.title-player .player-img{width:clamp(140px,35vw,220px);height:auto;margin:0 auto}
 .title-player .player-fallback{font-size:5rem}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .pwa-guide{background:#0d1520;border:1px solid #1a4a6a;border-radius:10px;padding:12px;font-size:.8rem;line-height:1.7;width:100%;max-width:360px}
@@ -126,8 +126,8 @@ textarea{resize:vertical;min-height:80px}
 .c-tab.skipped{opacity:.35;cursor:default}
 .c-tab-icon{font-size:1.3rem;line-height:1}
 .c-tab-diff{font-size:.6rem;color:var(--dim)}
-.scene-area{border-radius:12px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:10px;min-height:210px;max-height:52vw;background-size:cover;background-position:center bottom;transition:background-image 0.8s ease;background-color:#0a1628}
-.scene-enemy{max-height:190px;max-width:80%;object-fit:contain;display:block;background-color:transparent;mix-blend-mode:normal;filter:drop-shadow(0 0 18px rgba(155,109,255,.35));transition:all .6s ease}
+.scene-area{border-radius:12px;position:relative;overflow:hidden;margin-bottom:10px;height:55svh;background-size:cover;background-position:center center;transition:background-image 0.8s ease;background-color:#0a1628}
+.scene-enemy{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:75%;width:auto;background:transparent;background-color:transparent;mix-blend-mode:normal;filter:drop-shadow(0 0 18px rgba(155,109,255,.35));transition:all .6s ease}
 .scene-name-label{position:absolute;bottom:7px;font-size:.72rem;color:rgba(232,223,200,.8);font-family:'Zen Antique',serif;text-shadow:0 1px 6px rgba(0,0,0,.9);letter-spacing:.06em}
 .quest-bottom{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
 .quest-challenge-name{font-size:.9rem;line-height:1.65;margin:6px 0 10px;color:var(--text)}
@@ -145,7 +145,7 @@ textarea{resize:vertical;min-height:80px}
 /* STATUS */
 #screen-status{padding-bottom:80px;gap:12px}
 .status-player{display:flex;justify-content:center;margin:4px 0 12px}
-.status-player .player-img{width:160px;height:160px;object-fit:contain}
+.status-player .player-img{width:clamp(140px,35vw,220px);height:auto;object-fit:contain}
 .status-player .player-fallback{font-size:5rem}
 .status-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .status-row:last-child{margin-bottom:0}
@@ -154,9 +154,14 @@ textarea{resize:vertical;min-height:80px}
 .stat-bar-h-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width 1s ease}
 .hl-stat .stat-name{color:var(--gold)}
 .hl-stat .stat-bar-h-fill{background:linear-gradient(90deg,#f0a030,#f0c060)}
-/* LOG 3-LAYER */
-#screen-log{padding-bottom:80px;gap:0}
+/* LOG */
+#screen-log{padding:16px 16px 70px;display:flex;flex-direction:column;gap:0;height:100svh;overflow:hidden}
 .log-section-title{font-family:'Zen Antique',serif;color:var(--gold);font-size:.9rem;margin:16px 0 8px 2px}
+.seg-ctrl{display:flex;background:#110d20;border-radius:22px;padding:3px;gap:2px;margin-bottom:10px;flex-shrink:0}
+.seg-btn{flex:1;padding:8px 4px;border:none;border-radius:18px;background:none;color:var(--dim);font-size:.75rem;cursor:pointer;font-family:'Shippori Mincho',serif;transition:.2s;white-space:nowrap}
+.seg-btn.active{background:var(--surface);color:var(--gold);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.seg-panel{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.seg-panel.active{display:block}
 .log-map-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:4px;-webkit-overflow-scrolling:touch}
 .log-map-scroll::-webkit-scrollbar{height:3px}
 .log-map-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
@@ -179,14 +184,16 @@ textarea{resize:vertical;min-height:80px}
 .log-stats-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:.82rem;line-height:2.4;color:var(--dim)}
 .log-stats-val{color:var(--gold);font-weight:700}
 /* DETAIL SHEET */
-.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:700;display:none;align-items:flex-end;flex-direction:column;justify-content:flex-end}
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:700;display:none;align-items:stretch;flex-direction:column}
 .detail-overlay.show{display:flex}
-.detail-sheet{width:100%;background:#120f22;border:1px solid var(--border);border-top-left-radius:18px;border-top-right-radius:18px;padding:20px;max-height:82vh;overflow-y:auto;animation:slideUp .3s ease}
-@keyframes slideUp{from{transform:translateY(60%);opacity:0}to{transform:translateY(0);opacity:1}}
-.detail-sheet.ds-saved{background:#2a2010;border-color:var(--color-saved-border)}
-.detail-sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.detail-sheet{width:100%;height:100%;background:#120f22;border:none;display:flex;flex-direction:column;animation:fadeIn .25s ease}
+.detail-sheet.ds-saved{background:#1e150a}
+.detail-sheet-handle{display:none}
+.detail-header{display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.detail-close-btn{background:none;border:1px solid var(--border);color:var(--text);font-family:'Shippori Mincho',serif;font-size:.85rem;padding:6px 14px;border-radius:20px;cursor:pointer}
+.detail-scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
 .detail-img-area{text-align:center;margin-bottom:12px}
-.detail-img{width:140px;height:140px;object-fit:contain;margin:0 auto;display:block;border-radius:12px;box-shadow:0 0 0 3px rgba(155,109,255,.3),0 0 0 7px rgba(155,109,255,.1);transition:all .4s ease}
+.detail-img{width:clamp(120px,40vw,200px);height:auto;object-fit:contain;margin:0 auto;display:block;border-radius:12px;box-shadow:0 0 0 3px rgba(155,109,255,.3),0 0 0 7px rgba(155,109,255,.1);transition:all .4s ease}
 .detail-img-fallback{font-size:4rem;text-align:center;margin:10px 0}
 .detail-img-toggle{display:flex;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap}
 .detail-img-toggle button{padding:4px 10px;font-size:.68rem;border-radius:12px;border:1px solid var(--border);background:none;color:var(--text);cursor:pointer;transition:.15s;font-family:'Shippori Mincho',serif}
@@ -206,7 +213,7 @@ textarea{resize:vertical;min-height:80px}
 /* NEWGAME+ */
 #screen-newgame{padding-bottom:80px;background:radial-gradient(ellipse at center,#200a30 0%,var(--bg) 70%);gap:0}
 .newgame-player{display:flex;justify-content:center;margin-bottom:12px}
-.newgame-player .player-img{width:120px;height:120px;object-fit:contain;filter:brightness(.7) sepia(.3)}
+.newgame-player .player-img{width:clamp(80px,20vw,140px);height:auto;object-fit:contain;filter:brightness(.7) sepia(.3)}
 .newgame-player .player-fallback{font-size:4rem;filter:grayscale(.5)}
 .demon-text{background:#0a0515;border:1px solid #5a1a8a;border-radius:12px;padding:18px;margin-bottom:14px;line-height:2.1;font-size:.9rem;color:#d8b0ff;min-height:100px;white-space:pre-wrap;word-break:break-all}
 .correction-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:.84rem}
@@ -404,14 +411,21 @@ textarea{resize:vertical;min-height:80px}
 
 <!-- LOG -->
 <div id="screen-log" class="screen">
-  <h1 style="font-size:1.2rem;margin-bottom:0">📜 冒険記録</h1>
-  <div class="log-section-title">旅のあしあと</div>
-  <div class="log-map-scroll" id="log-map-scroll"></div>
-  <div class="log-section-title">解放された魂たち（図鑑）</div>
-  <div class="zukan-grid" id="zukan-grid"></div>
-  <div class="log-section-title">この旅の記録</div>
-  <div class="log-stats-card" id="log-stats"></div>
-  <div class="gap-lg"></div>
+  <h1 style="font-size:1.1rem;margin-bottom:10px">📜 冒険記録</h1>
+  <div class="seg-ctrl">
+    <button class="seg-btn active" onclick="switchLogTab('map',this)">🗺️ マップ</button>
+    <button class="seg-btn" onclick="switchLogTab('zukan',this)">📖 図鑑</button>
+    <button class="seg-btn" onclick="switchLogTab('stats',this)">📊 記録</button>
+  </div>
+  <div class="seg-panel active" id="log-panel-map">
+    <div class="log-map-scroll" id="log-map-scroll"></div>
+  </div>
+  <div class="seg-panel" id="log-panel-zukan">
+    <div class="zukan-grid" id="zukan-grid"></div>
+  </div>
+  <div class="seg-panel" id="log-panel-stats">
+    <div class="log-stats-card" id="log-stats"></div>
+  </div>
 </div>
 
 <!-- NEWGAME+ -->
@@ -461,12 +475,16 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div>
 
-<!-- DETAIL SHEET -->
-<div id="detail-overlay" class="detail-overlay" onclick="closeDetail(event)">
+<!-- DETAIL MODAL -->
+<div id="detail-overlay" class="detail-overlay">
   <div class="detail-sheet" id="detail-sheet">
-    <div class="detail-sheet-handle"></div>
-    <div class="detail-img-area" id="detail-img-area"></div>
-    <div id="detail-body"></div>
+    <div class="detail-header" id="detail-header">
+      <button class="detail-close-btn" onclick="closeDetail()">← 閉じる</button>
+    </div>
+    <div class="detail-scroll-body">
+      <div class="detail-img-area" id="detail-img-area"></div>
+      <div id="detail-body"></div>
+    </div>
   </div>
 </div>
 
@@ -1516,7 +1534,24 @@ function renderStatus() {
 
 // ─── RENDER: LOG (3-layer) ───
 
+let _logTab = 'map';
+function switchLogTab(tab, btn) {
+  _logTab = tab;
+  document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.seg-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById(`log-panel-${tab}`);
+  if (panel) panel.classList.add('active');
+}
+
 function renderLog() {
+  // タブ表示状態を復元
+  document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.seg-btn[onclick*="${_logTab}"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+  document.querySelectorAll('.seg-panel').forEach(p => p.classList.remove('active'));
+  const activePanel = document.getElementById(`log-panel-${_logTab}`);
+  if (activePanel) activePanel.classList.add('active');
   // Layer 1: week map scroll
   const mapScroll = document.getElementById('log-map-scroll');
   mapScroll.innerHTML = '';
@@ -1647,9 +1682,8 @@ function openDetail(enemyKey, hist) {
   document.getElementById('detail-overlay').classList.add('show');
 }
 
-function closeDetail(e) {
-  if (e.target === document.getElementById('detail-overlay'))
-    document.getElementById('detail-overlay').classList.remove('show');
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('show');
 }
 
 // ─── NEW GAME+ ───
