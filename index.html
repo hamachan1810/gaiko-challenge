@@ -118,6 +118,22 @@ textarea{resize:vertical;min-height:80px}
 .result-btns .btn{flex:1;padding:12px 8px;font-size:.88rem}
 .memo-area{margin-top:12px;display:none}
 .memo-area.open{display:block}
+/* Z案クエストレイアウト */
+.quest-z{display:flex;flex-direction:column;gap:0}
+.c-tabs{display:flex;gap:6px;margin-bottom:10px}
+.c-tab{flex:1;padding:8px 2px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:.2s;font-family:'Shippori Mincho',serif;min-width:0}
+.c-tab.active{border-color:var(--gold);background:#201848;box-shadow:0 0 8px rgba(240,192,96,.25)}
+.c-tab.skipped{opacity:.35;cursor:default}
+.c-tab-icon{font-size:1.3rem;line-height:1}
+.c-tab-diff{font-size:.6rem;color:var(--dim)}
+.scene-area{border-radius:12px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:10px;min-height:210px;max-height:52vw}
+.scene-forest{background:linear-gradient(180deg,#0a1628 0%,#0d1f35 40%,#112516 100%)}
+.scene-fog{background:linear-gradient(180deg,#12102a 0%,#1a1535 50%,#0e1a28 100%)}
+.scene-castle{background:linear-gradient(180deg,#1a0a2a 0%,#2a0f3a 40%,#0d0a1a 100%)}
+.scene-enemy{max-height:190px;max-width:80%;object-fit:contain;display:block;background-color:transparent;mix-blend-mode:normal;filter:drop-shadow(0 0 18px rgba(155,109,255,.35));transition:all .6s ease}
+.scene-name-label{position:absolute;bottom:7px;font-size:.72rem;color:rgba(232,223,200,.8);font-family:'Zen Antique',serif;text-shadow:0 1px 6px rgba(0,0,0,.9);letter-spacing:.06em}
+.quest-bottom{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
+.quest-challenge-name{font-size:.9rem;line-height:1.65;margin:6px 0 10px;color:var(--text)}
 .skill-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
   background:rgba(13,8,32,.96);border:2px solid var(--gold);color:var(--gold);
   font-family:'Zen Antique',serif;font-size:1.3rem;font-weight:700;
@@ -1092,99 +1108,95 @@ function renderSelect() {
   });
 }
 
-function renderChallenge() {
-  const idx = G.challengeFlowIndex;
-  const ids = G.weeklySelected;
-  if (idx >= ids.length) { showPhase('remnant'); return; }
+let _challengeTabId = null;
 
-  const id = ids[idx];
-  const c  = getChallenge(id);
+function renderChallenge() {
+  const area = document.getElementById('challenge-flow-area');
+
+  // Auto-select tab: first pending selected challenge, else first selected, else first assigned
+  if (!_challengeTabId || !G.weeklyAssigned.includes(_challengeTabId)) {
+    const firstPending = G.weeklySelected.find(id => !G.weeklyResults[id]);
+    _challengeTabId = firstPending || G.weeklySelected[0] || G.weeklyAssigned[0];
+  }
+
+  const diffLabel = {easy:'易',medium:'普',hard:'難',boss:'王'};
+
+  const tabsHTML = G.weeklyAssigned.map(id => {
+    const c = getChallenge(id);
+    const enemy = getEnemyForChallenge(id);
+    const isSelected = G.weeklySelected.includes(id);
+    const result = G.weeklyResults[id];
+    const isActive = id === _challengeTabId;
+    const statusIcon = result ? (isSaved(result) ? '✨' : '😔') : (isSelected ? enemy.emoji : '💨');
+    return `<button class="c-tab${isActive?' active':''}${!isSelected?' skipped':''}"
+      data-tab-id="${id}"${!isSelected?' disabled':''}>
+      <span class="c-tab-icon">${statusIcon}</span>
+      <span class="c-tab-diff">${diffLabel[c.d]||'?'}</span>
+    </button>`;
+  }).join('');
+
+  area.innerHTML = `<div class="quest-z">
+    <div class="c-tabs">${tabsHTML}</div>
+    <div id="z-scene"></div>
+    <div id="z-bottom" class="quest-bottom"></div>
+  </div>`;
+
+  area.querySelectorAll('.c-tab:not([disabled])').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _challengeTabId = Number(btn.dataset.tabId);
+      renderChallenge();
+    });
+  });
+
+  renderChallengeContent(_challengeTabId);
+}
+
+function renderChallengeContent(id) {
+  const c = getChallenge(id);
   const enemy = getEnemyForChallenge(id);
   const result = G.weeklyResults[id];
-  const area = document.getElementById('challenge-flow-area');
-  area.innerHTML = '';
+  const isSelected = G.weeklySelected.includes(id);
 
+  const week = G.currentWeek;
+  const sceneCls = week <= 5 ? 'scene-forest' : week <= 10 ? 'scene-fog' : 'scene-castle';
   const imgSrc = result
     ? (isSaved(result) ? `assets/enemies/${enemy.key}_saved.png` : `assets/enemies/${enemy.key}_failed.png`)
     : `assets/enemies/${enemy.key}_normal.png`;
 
-  const div = document.createElement('div');
-  div.className = 'flow-card';
-  div.innerHTML = `
-    <div class="flow-header">
-      <img class="flow-player" src="assets/player.png" alt="なおたか"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-      <div class="flow-player-fallback">🐐</div>
-      <div>${BADGE_HTML[c.d]||BADGE_HTML.easy}<div style="font-size:.92rem;font-weight:700;margin-top:4px">${c.name}</div></div>
-    </div>
-    <div style="text-align:center;margin:8px 0">
-      <img id="flow-enemy-img" src="${imgSrc}" alt="${enemy.name}" class="flow-enemy-img"
-        onerror="this.style.display='none';document.getElementById('flow-enemy-fallback').style.display='block'">
-      <div id="flow-enemy-fallback" class="flow-enemy-fallback" style="display:none">${enemy.emoji}</div>
-      <div style="font-size:.78rem;color:var(--dim);margin-top:4px">${enemy.name}</div>
-    </div>
-    ${result ? resultSummaryHTML(result, idx, ids.length) : resultButtonsHTML()}`;
-  area.appendChild(div);
+  const sceneEl = document.getElementById('z-scene');
+  sceneEl.className = `scene-area ${sceneCls}`;
+  sceneEl.innerHTML = `
+    <img class="scene-enemy" id="z-enemy-img" src="${imgSrc}" alt="${enemy.name}"
+      onerror="this.style.display='none'">
+    <div class="scene-name-label">${enemy.name}</div>`;
 
-  if (!result) {
-    div.querySelector('#btn-saved').onclick = async e => {
-      const rect = e.target.getBoundingClientRect();
-      saveAnimation(c.d, rect.left + rect.width/2, rect.top + rect.height/2);
+  const bottomEl = document.getElementById('z-bottom');
 
-      // Switch enemy image to saved
-      const img = div.querySelector('#flow-enemy-img');
-      if (img) {
-        img.src = `assets/enemies/${enemy.key}_saved.png`;
-        img.style.filter = 'brightness(1.2)';
-        setTimeout(() => { if(img) img.style.filter = ''; }, 800);
-      }
-
-      const entry = {
-        run:G.currentRun, week:G.currentWeek,
-        challenge_id:c.id, challenge_name:c.name, difficulty:c.d,
-        status:'saved', memo:'', ts:new Date().toISOString(), enemyKey:enemy.key
-      };
-      G.weeklyResults[id] = {status:'saved', memo:''};
-      G.challengeHistory.push(entry);
-      G.totalSaved++;
-      G.challengeFlowIndex++;
-      save();
-      updateBackgroundStage(G.totalSaved);
-      addXP(DIFF_XP[c.d]||10, c.d);
-      gasPost({action:'save_challenge', ...entry, timestamp:entry.ts});
-      checkBonuses();
-      setTimeout(() => renderChallenge(), 2200);
-    };
-
-    div.querySelector('#btn-failed').onclick = () => {
-      div.querySelector('.memo-area').classList.add('open');
-    };
-    div.querySelector('#btn-save-memo').onclick = () => {
-      const memo = div.querySelector('#memo-input').value.trim();
-      const img = div.querySelector('#flow-enemy-img');
-      if (img) img.src = `assets/enemies/${enemy.key}_failed.png`;
-
-      const entry = {
-        run:G.currentRun, week:G.currentWeek,
-        challenge_id:c.id, challenge_name:c.name, difficulty:c.d,
-        status:'failed', memo, ts:new Date().toISOString(), enemyKey:enemy.key
-      };
-      G.weeklyResults[id] = {status:'failed', memo};
-      G.challengeHistory.push(entry);
-      G.challengeFlowIndex++;
-      save();
-      if (memo) addXP(5, 'memo');
-      gasPost({action:'save_challenge', ...entry, timestamp:entry.ts});
-      renderChallenge();
-    };
-  } else {
-    const nextBtn = div.querySelector('#btn-next');
-    if (nextBtn) nextBtn.onclick = () => { G.challengeFlowIndex++; save(); renderChallenge(); };
+  if (!isSelected) {
+    bottomEl.innerHTML = `<p style="text-align:center;color:var(--dim);font-size:.88rem;padding:8px 0">
+      今回は通り過ぎた魂…<br><span style="font-size:.75rem">この魂は次の機会に救える</span></p>`;
+    return;
   }
-}
 
-function resultButtonsHTML() {
-  return `
+  const allDone = G.weeklySelected.length > 0 && G.weeklySelected.every(sid => G.weeklyResults[sid]);
+
+  if (result) {
+    const saved = isSaved(result);
+    bottomEl.innerHTML = `
+      ${BADGE_HTML[c.d]||BADGE_HTML.easy}
+      <div class="quest-challenge-name">${c.name}</div>
+      <div style="text-align:center;font-size:1.05rem;margin-bottom:10px">${saved?'✨ 救い出した！':'😔 まだ手が届かなかった…'}</div>
+      ${result.memo ? `<p class="dim" style="font-size:.82rem;margin-bottom:10px">💭 ${result.memo}</p>` : ''}
+      ${allDone ? `<button class="btn btn-gold" id="btn-to-remnant">⚔️ 振り返りへ進む</button>` : ''}`;
+    if (allDone) {
+      document.getElementById('btn-to-remnant').onclick = () => showPhase('remnant');
+    }
+    return;
+  }
+
+  bottomEl.innerHTML = `
+    ${BADGE_HTML[c.d]||BADGE_HTML.easy}
+    <div class="quest-challenge-name">${c.name}</div>
     <div class="result-btns">
       <button class="btn btn-gold" id="btn-saved">✨ 救い出した！</button>
       <button class="btn btn-danger" id="btn-failed">😔 まだ手が届かない…</button>
@@ -1197,17 +1209,58 @@ function resultButtonsHTML() {
       <div class="gap"></div>
       <button class="btn btn-accent" id="btn-save-memo">💭 記録して前へ進む (+5XP)</button>
     </div>`;
-}
 
-function resultSummaryHTML(result, idx, total) {
-  const saved = isSaved(result);
-  const icon  = saved ? '✨' : '😔';
-  const label = saved ? '救い出した！' : 'まだ手が届かなかった…';
-  const next  = idx + 1 < total ? '次の魂へ →' : '振り返りへ進む →';
-  return `
-    <div style="text-align:center;font-size:1.1rem;margin-bottom:10px">${icon} ${label}</div>
-    ${result.memo ? `<p class="dim" style="font-size:.82rem;margin-bottom:10px">💭 ${result.memo}</p>` : ''}
-    <button class="btn btn-accent" id="btn-next">${next}</button>`;
+  document.getElementById('btn-saved').onclick = async e => {
+    const rect = e.target.getBoundingClientRect();
+    saveAnimation(c.d, rect.left + rect.width/2, rect.top + rect.height/2);
+    const img = document.getElementById('z-enemy-img');
+    if (img) {
+      img.src = `assets/enemies/${enemy.key}_saved.png`;
+      img.style.filter = 'brightness(1.2)';
+      setTimeout(() => { if (img) img.style.filter = ''; }, 800);
+    }
+    const entry = {
+      run:G.currentRun, week:G.currentWeek,
+      challenge_id:c.id, challenge_name:c.name, difficulty:c.d,
+      status:'saved', memo:'', ts:new Date().toISOString(), enemyKey:enemy.key
+    };
+    G.weeklyResults[id] = {status:'saved', memo:''};
+    G.challengeHistory.push(entry);
+    G.totalSaved++;
+    save();
+    updateBackgroundStage(G.totalSaved);
+    addXP(DIFF_XP[c.d]||10, c.d);
+    gasPost({action:'save_challenge', ...entry, timestamp:entry.ts});
+    checkBonuses();
+    setTimeout(() => {
+      const nextPending = G.weeklySelected.find(sid => !G.weeklyResults[sid]);
+      if (nextPending) _challengeTabId = nextPending;
+      renderChallenge();
+    }, 2200);
+  };
+
+  document.getElementById('btn-failed').onclick = () => {
+    document.querySelector('#z-bottom .memo-area').classList.add('open');
+  };
+
+  document.getElementById('btn-save-memo').onclick = () => {
+    const memo = document.getElementById('memo-input').value.trim();
+    const img = document.getElementById('z-enemy-img');
+    if (img) img.src = `assets/enemies/${enemy.key}_failed.png`;
+    const entry = {
+      run:G.currentRun, week:G.currentWeek,
+      challenge_id:c.id, challenge_name:c.name, difficulty:c.d,
+      status:'failed', memo, ts:new Date().toISOString(), enemyKey:enemy.key
+    };
+    G.weeklyResults[id] = {status:'failed', memo};
+    G.challengeHistory.push(entry);
+    save();
+    if (memo) addXP(5, 'memo');
+    gasPost({action:'save_challenge', ...entry, timestamp:entry.ts});
+    const nextPending = G.weeklySelected.find(sid => !G.weeklyResults[sid]);
+    if (nextPending) _challengeTabId = nextPending;
+    renderChallenge();
+  };
 }
 
 function checkBonuses() {
@@ -1645,6 +1698,7 @@ document.getElementById('btn-sortie').onclick = async () => {
   const ok = await confirmDialog('この魂と向き合う覚悟はありますか？');
   if (!ok) return;
   G.challengeFlowIndex = 0;
+  _challengeTabId = null;
   save();
   showPhase('challenge');
 };
@@ -1653,6 +1707,7 @@ document.getElementById('btn-fight-remnant').onclick = () => {
   if (!remnant.length) { showPhase('gate'); return; }
   G.weeklySelected = [...G.weeklySelected, ...remnant];
   G.challengeFlowIndex = G.weeklySelected.indexOf(remnant[0]);
+  _challengeTabId = remnant[0];
   save();
   showPhase('challenge');
 };
