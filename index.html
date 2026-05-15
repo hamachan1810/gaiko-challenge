@@ -1874,8 +1874,20 @@ function init() {
     document.getElementById('btn-newgame').textContent      = '✨ 最初からやり直す';
     updateBackgroundStage(G.totalSaved);
   }
-  if ('serviceWorker' in navigator)
-    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js').then(reg => {
+      // 新しいSWが待機中なら即座に有効化してページをリロード
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
+            navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+          }
+        });
+      });
+    }).catch(() => {});
+  }
 }
 
 init();
