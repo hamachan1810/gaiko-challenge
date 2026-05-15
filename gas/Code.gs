@@ -76,15 +76,18 @@ function saveChallenge(ss, data) {
 
 function saveRunSummary(ss, data) {
   const sheet = getOrCreateSheet(ss, 'run_summary',
-    ['run', 'total_achieved', 'total_failed', 'total_skipped',
-     'hard_achieved', 'hard_selected', 'memo_count', 'max_streak',
+    ['run', 'total_saved', 'total_failed', 'total_skipped',
+     'hard_saved', 'hard_selected', 'memo_count', 'max_streak',
      'total_xp_this_run', 'completed_date']);
   // 既存のrun行があれば上書き
   const rows = sheet.getDataRange().getValues();
   const idx = rows.findIndex(r => r[0] === data.run);
   const row = [
-    data.run, data.total_achieved, data.total_failed, data.total_skipped,
-    data.hard_achieved, data.hard_selected, data.memo_count, data.max_streak,
+    data.run,
+    data.total_saved  !== undefined ? data.total_saved  : (data.total_achieved || 0),
+    data.total_failed, data.total_skipped,
+    data.hard_saved   !== undefined ? data.hard_saved   : (data.hard_achieved  || 0),
+    data.hard_selected, data.memo_count, data.max_streak,
     data.total_xp_this_run, data.completed_date || new Date().toISOString()
   ];
   if (idx >= 1) {
@@ -102,8 +105,8 @@ function getData(ss) {
   const challengeLog = sheetToObjects(ss, 'challenge_log',
     ['run', 'week', 'challenge_id', 'challenge_name', 'difficulty', 'status', 'memo', 'timestamp']);
   const runSummary = sheetToObjects(ss, 'run_summary',
-    ['run', 'total_achieved', 'total_failed', 'total_skipped',
-     'hard_achieved', 'hard_selected', 'memo_count', 'max_streak',
+    ['run', 'total_saved', 'total_failed', 'total_skipped',
+     'hard_saved', 'hard_selected', 'memo_count', 'max_streak',
      'total_xp_this_run', 'completed_date']);
   return { ok: true, config, challengeLog, runSummary };
 }

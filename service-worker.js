@@ -27,7 +27,7 @@ self.addEventListener('push', e => {
   const data = e.data ? e.data.json() : {};
   const title = data.title || '⚔️ コトバの王国';
   const options = {
-    body: data.body || '勇者よ！まだ向き合っていない強敵が、この先に待っているぞ！',
+    body: data.body || '勇者よ！まだ救えていない魂が、この先で光を待っているぞ！',
     icon: './assets/icon-192.png',
     badge: './assets/icon-192.png',
     vibrate: [200, 100, 200],
