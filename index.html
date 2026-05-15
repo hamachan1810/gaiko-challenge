@@ -126,10 +126,7 @@ textarea{resize:vertical;min-height:80px}
 .c-tab.skipped{opacity:.35;cursor:default}
 .c-tab-icon{font-size:1.3rem;line-height:1}
 .c-tab-diff{font-size:.6rem;color:var(--dim)}
-.scene-area{border-radius:12px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:10px;min-height:210px;max-height:52vw}
-.scene-forest{background:linear-gradient(180deg,#0a1628 0%,#0d1f35 40%,#112516 100%)}
-.scene-fog{background:linear-gradient(180deg,#12102a 0%,#1a1535 50%,#0e1a28 100%)}
-.scene-castle{background:linear-gradient(180deg,#1a0a2a 0%,#2a0f3a 40%,#0d0a1a 100%)}
+.scene-area{border-radius:12px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:10px;min-height:210px;max-height:52vw;background-size:cover;background-position:center bottom;transition:background-image 0.8s ease;background-color:#0a1628}
 .scene-enemy{max-height:190px;max-width:80%;object-fit:contain;display:block;background-color:transparent;mix-blend-mode:normal;filter:drop-shadow(0 0 18px rgba(155,109,255,.35));transition:all .6s ease}
 .scene-name-label{position:absolute;bottom:7px;font-size:.72rem;color:rgba(232,223,200,.8);font-family:'Zen Antique',serif;text-shadow:0 1px 6px rgba(0,0,0,.9);letter-spacing:.06em}
 .quest-bottom{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
@@ -891,6 +888,13 @@ function weeklyAchievedCount() {
   }).length;
 }
 
+function getSceneBg(week, enemyKey) {
+  if (enemyKey === 'mokunen' || week >= 15) return 'assets/bg/bg_throne.png';
+  if (week <= 5)  return 'assets/bg/bg_forest.png';
+  if (week <= 10) return 'assets/bg/bg_fog.png';
+  return 'assets/bg/bg_castle.png';
+}
+
 // ─── XP & LEVEL ───
 
 function levelOf(xp) {
@@ -1203,7 +1207,6 @@ function renderChallengeContent(id) {
   const isSelected = G.weeklySelected.includes(id);
 
   const week = G.currentWeek;
-  const sceneCls = week <= 5 ? 'scene-forest' : week <= 10 ? 'scene-fog' : 'scene-castle';
   // Image reflects rescue gauge (not individual challenge result)
   const rescueCount = weeklyAchievedCount();
   const imgSrc = rescueCount >= 2
@@ -1211,7 +1214,8 @@ function renderChallengeContent(id) {
     : `assets/enemies/${enemy.key}_normal.png`;
 
   const sceneEl = document.getElementById('z-scene');
-  sceneEl.className = `scene-area ${sceneCls}`;
+  sceneEl.className = 'scene-area';
+  sceneEl.style.backgroundImage = `url(${getSceneBg(week, enemy.key)})`;
   sceneEl.innerHTML = `
     <img class="scene-enemy" id="z-enemy-img" src="${imgSrc}" alt="${enemy.name}"
       onerror="this.style.display='none'">
