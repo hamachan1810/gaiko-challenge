@@ -8,10 +8,12 @@ function doPost(e) {
     let result;
 
     switch (data.action) {
-      case 'save_config':      result = saveConfig(ss, data);      break;
-      case 'save_challenge':   result = saveChallenge(ss, data);   break;
-      case 'save_run_summary': result = saveRunSummary(ss, data);  break;
-      case 'get_data':         result = getData(ss);               break;
+      case 'save_config':       result = saveConfig(ss, data);       break;
+      case 'save_challenge':    result = saveChallenge(ss, data);    break;
+      case 'save_run_summary':  result = saveRunSummary(ss, data);   break;
+      case 'save_character':    result = saveCharacter(ss, data);    break;
+      case 'save_special_title':result = saveSpecialTitle(ss, data); break;
+      case 'get_data':          result = getData(ss);                break;
       default: result = { ok: false, error: 'unknown action' };
     }
 
@@ -98,6 +100,43 @@ function saveRunSummary(ss, data) {
   return { ok: true };
 }
 
+// ── character_log ─────────────────────────────────────────────────────────────
+
+function saveCharacter(ss, data) {
+  const sheet = getOrCreateSheet(ss, 'character_log',
+    ['run', 'week', 'character_id', 'character_name', 'achieved_count',
+     'rescue_status', 'is_full_saved', 'first_met_run', 'completed_date']);
+  const rows = sheet.getDataRange().getValues();
+  // Check if this run+week already has a row
+  const idx = rows.findIndex(r => r[0] === data.run && r[1] === data.week);
+  const row = [
+    data.run, data.week, data.character_id, data.character_name,
+    data.achieved_count, data.rescue_status, data.is_full_saved,
+    data.first_met_run, data.completed_date || new Date().toISOString()
+  ];
+  if (idx >= 1) {
+    sheet.getRange(idx + 1, 1, 1, row.length).setValues([row]);
+  } else {
+    sheet.appendRow(row);
+  }
+  return { ok: true };
+}
+
+// ── special_titles ────────────────────────────────────────────────────────────
+
+function saveSpecialTitle(ss, data) {
+  const sheet = getOrCreateSheet(ss, 'special_titles',
+    ['title_id', 'title_name', 'achieved_date', 'run']);
+  const rows = sheet.getDataRange().getValues();
+  // Prevent duplicate titles
+  const exists = rows.some(r => r[0] === data.title_id);
+  if (!exists) {
+    sheet.appendRow([data.title_id, data.title_name,
+      data.achieved_date || new Date().toISOString(), data.run]);
+  }
+  return { ok: true };
+}
+
 // ── get_data ─────────────────────────────────────────────────────────────────
 
 function getData(ss) {
@@ -108,7 +147,12 @@ function getData(ss) {
     ['run', 'total_saved', 'total_failed', 'total_skipped',
      'hard_saved', 'hard_selected', 'memo_count', 'max_streak',
      'total_xp_this_run', 'completed_date']);
-  return { ok: true, config, challengeLog, runSummary };
+  const characterLog = sheetToObjects(ss, 'character_log',
+    ['run', 'week', 'character_id', 'character_name', 'achieved_count',
+     'rescue_status', 'is_full_saved', 'first_met_run', 'completed_date']);
+  const specialTitles = sheetToObjects(ss, 'special_titles',
+    ['title_id', 'title_name', 'achieved_date', 'run']);
+  return { ok: true, config, challengeLog, runSummary, characterLog, specialTitles };
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────

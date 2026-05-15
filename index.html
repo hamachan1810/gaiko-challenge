@@ -402,6 +402,7 @@ textarea{resize:vertical;min-height:80px}
   </div>
   <div class="card"><h2>ステータス</h2><div id="status-rows"></div></div>
   <div class="card"><h2>実績</h2><div id="status-achievements" style="font-size:.85rem;line-height:2.1;color:var(--dim)"></div></div>
+  <div class="card" id="special-titles-card" style="display:none"><h2>✨ 特別称号</h2><div id="special-titles-list" style="font-size:.88rem;line-height:2.1"></div></div>
 </div>
 
 <!-- LOG -->
@@ -704,11 +705,16 @@ function defaultState() {
     weeklyAssigned: [],
     weeklySelected: [],
     weeklyResults: {},
-    weeklyEnemyMap: {},
+    weeklyEnemy: null,
+    weeklyRescueDone: false,
     challengeFlowIndex: 0,
     challengeHistory: [],
     usedIds: {},
+    usedEnemies: {},
     lastWeekIds: [],
+    metEnemies: [],
+    savedEnemies: [],
+    specialTitles: [],
     prevRunSummary: null,
   };
 }
@@ -721,9 +727,27 @@ function load() {
       G = {...def, ...saved};
       if (!G.stats) G.stats = {...INITIAL_STATS};
       if (!G.weeklyEnemyMap) G.weeklyEnemyMap = {};
+      // v4.2 migration: weeklyEnemyMap → weeklyEnemy (single enemy per week)
+      if (!G.weeklyEnemy && G.weeklyEnemyMap && Object.keys(G.weeklyEnemyMap).length > 0) {
+        const vals = Object.values(G.weeklyEnemyMap);
+        const freq = {};
+        vals.forEach(k => { freq[k] = (freq[k]||0)+1; });
+        G.weeklyEnemy = Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];
+      }
+      if (!G.usedEnemies) G.usedEnemies = {};
+      if (!G.metEnemies || G.metEnemies.length === 0) {
+        G.metEnemies = [...new Set((G.challengeHistory||[]).map(h=>h.enemyKey).filter(Boolean))];
+      }
+      if (!G.savedEnemies || G.savedEnemies.length === 0) {
+        // Migrate: an enemy with ≥1 saved challenge is considered rescued
+        const keys = new Set((G.challengeHistory||[]).filter(isSaved).map(h=>h.enemyKey).filter(Boolean));
+        G.savedEnemies = [...keys];
+      }
+      if (!G.specialTitles) G.specialTitles = [];
+      if (typeof G.weeklyRescueDone !== 'boolean') G.weeklyRescueDone = false;
       if (typeof G.totalSaved !== 'number') {
-        // migrate: count achieved/saved from history
-        G.totalSaved = (G.challengeHistory || []).filter(h => isSaved(h)).length;
+        // migrate: count from savedEnemies
+        G.totalSaved = G.savedEnemies.length || (G.challengeHistory || []).filter(h => isSaved(h)).length;
       }
     } else {
       G = def;
@@ -800,7 +824,9 @@ function pickFrom(pool, used, last) {
 function assignWeeklyChallenges() {
   const key = String(G.currentRun);
   if (!G.usedIds[key]) G.usedIds[key] = [];
+  if (!G.usedEnemies[key]) G.usedEnemies[key] = [];
   const used = G.usedIds[key];
+  const usedEn = G.usedEnemies[key];
   const last = G.lastWeekIds || [];
 
   const ePool = CHALLENGES.filter(c => c.d === 'easy');
@@ -819,16 +845,23 @@ function assignWeeklyChallenges() {
   picked.forEach(c => { if (c.id && !used.includes(c.id)) used.push(c.id); });
   G.usedIds[key] = used;
 
-  G.weeklyEnemyMap = {};
-  picked.forEach(c => {
-    if (c.id === 0) {
-      G.weeklyEnemyMap[0] = 'mokunen';
-    } else {
-      const pool = ENEMY_POOL[c.d] || ENEMY_POOL.easy;
-      const enemy = pool[Math.floor(Math.random() * pool.length)];
-      G.weeklyEnemyMap[c.id] = enemy.key;
-    }
-  });
+  // 1週1キャラ: pick ONE enemy for the whole week
+  if (G.currentWeek === 15) {
+    G.weeklyEnemy = 'mokunen';
+  } else {
+    const allEnemies = ENEMIES.filter(e => e.key !== 'mokunen');
+    const avail = allEnemies.filter(e => !usedEn.includes(e.key));
+    const pool = avail.length > 0 ? avail : allEnemies;
+    G.weeklyEnemy = pool[Math.floor(Math.random() * pool.length)].key;
+    usedEn.push(G.weeklyEnemy);
+    G.usedEnemies[key] = usedEn;
+  }
+  // Track met enemies (cross-run)
+  if (!G.metEnemies.includes(G.weeklyEnemy)) {
+    G.metEnemies.push(G.weeklyEnemy);
+  }
+  G.weeklyRescueDone = false;
+  G.weeklyEnemyMap = {}; // keep for backward compat (legacy reads)
   save();
 }
 
@@ -840,11 +873,22 @@ function getEnemyByKey(key) {
   return ENEMIES.find(e => e.key === key) || ENEMIES[0];
 }
 function getEnemyForChallenge(cid) {
+  // v4.2: 1週1キャラ - all challenges share the week's enemy
+  if (G.weeklyEnemy) return getEnemyByKey(G.weeklyEnemy);
+  // backward compat with old weeklyEnemyMap
   const key = G.weeklyEnemyMap && G.weeklyEnemyMap[cid];
   if (key) return getEnemyByKey(key);
   const c = getChallenge(cid);
   const pool = ENEMY_POOL[c.d] || ENEMY_POOL.easy;
   return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// Helper: count achieved challenges this week (for rescue gauge)
+function weeklyAchievedCount() {
+  return G.weeklyAssigned.filter(id => {
+    const r = G.weeklyResults[id];
+    return r && isSaved(r);
+  }).length;
 }
 
 // ─── XP & LEVEL ───
@@ -990,7 +1034,8 @@ function renderMap() {
     G.weeklyAssigned = [];
     G.weeklySelected = [];
     G.weeklyResults = {};
-    G.weeklyEnemyMap = {};
+    G.weeklyEnemy = null;
+    G.weeklyRescueDone = false;
     G.challengeFlowIndex = 0;
     save();
   }
@@ -1159,8 +1204,10 @@ function renderChallengeContent(id) {
 
   const week = G.currentWeek;
   const sceneCls = week <= 5 ? 'scene-forest' : week <= 10 ? 'scene-fog' : 'scene-castle';
-  const imgSrc = result
-    ? (isSaved(result) ? `assets/enemies/${enemy.key}_saved.png` : `assets/enemies/${enemy.key}_failed.png`)
+  // Image reflects rescue gauge (not individual challenge result)
+  const rescueCount = weeklyAchievedCount();
+  const imgSrc = rescueCount >= 2
+    ? `assets/enemies/${enemy.key}_saved.png`
     : `assets/enemies/${enemy.key}_normal.png`;
 
   const sceneEl = document.getElementById('z-scene');
@@ -1212,9 +1259,13 @@ function renderChallengeContent(id) {
 
   document.getElementById('btn-saved').onclick = async e => {
     const rect = e.target.getBoundingClientRect();
+    // Record result first to get accurate count
+    G.weeklyResults[id] = {status:'saved', memo:''};
+    const newCount = weeklyAchievedCount();
     saveAnimation(c.d, rect.left + rect.width/2, rect.top + rect.height/2);
+    // Switch to _saved image only when rescue gauge reaches 2/4
     const img = document.getElementById('z-enemy-img');
-    if (img) {
+    if (img && newCount >= 2) {
       img.src = `assets/enemies/${enemy.key}_saved.png`;
       img.style.filter = 'brightness(1.2)';
       setTimeout(() => { if (img) img.style.filter = ''; }, 800);
@@ -1224,14 +1275,11 @@ function renderChallengeContent(id) {
       challenge_id:c.id, challenge_name:c.name, difficulty:c.d,
       status:'saved', memo:'', ts:new Date().toISOString(), enemyKey:enemy.key
     };
-    G.weeklyResults[id] = {status:'saved', memo:''};
     G.challengeHistory.push(entry);
-    G.totalSaved++;
     save();
-    updateBackgroundStage(G.totalSaved);
     addXP(DIFF_XP[c.d]||10, c.d);
     gasPost({action:'save_challenge', ...entry, timestamp:entry.ts});
-    checkBonuses();
+    checkBonuses(); // handles totalSaved++ at 2/4 threshold
     setTimeout(() => {
       const nextPending = G.weeklySelected.find(sid => !G.weeklyResults[sid]);
       if (nextPending) _challengeTabId = nextPending;
@@ -1264,14 +1312,20 @@ function renderChallengeContent(id) {
 }
 
 function checkBonuses() {
-  const ids = G.weeklySelected;
-  if (!ids.length) return;
-  const allDone    = ids.every(id => G.weeklyResults[id]);
-  const allSaved   = ids.every(id => isSaved(G.weeklyResults[id]));
-  if (!allDone || !allSaved) return;
-  setTimeout(() => addXP(15, 'allbonus'), 500);
-  const all4 = G.weeklyAssigned.length === 4
-    && G.weeklyAssigned.every(id => isSaved(G.weeklyResults[id]));
+  const achievedCount = weeklyAchievedCount();
+  // 救済ゲージ: 2/4以上で救済確定 (once per week)
+  if (achievedCount >= 2 && !G.weeklyRescueDone) {
+    G.weeklyRescueDone = true;
+    G.totalSaved++;
+    if (!G.savedEnemies.includes(G.weeklyEnemy)) {
+      G.savedEnemies.push(G.weeklyEnemy);
+    }
+    save();
+    updateBackgroundStage(G.totalSaved);
+    setTimeout(() => addXP(15, 'allbonus'), 500);
+  }
+  // 4/4完全救済ボーナス
+  const all4 = G.weeklyAssigned.every(id => { const r = G.weeklyResults[id]; return r && isSaved(r); });
   if (all4) setTimeout(() => addXP(30, 'fullbonus'), 1000);
 }
 
@@ -1282,19 +1336,67 @@ function renderRemnant() {
   if (!remnant.length) { showPhase('gate'); return; }
   remnant.forEach(id => {
     const c = getChallenge(id);
-    const enemy = getEnemyForChallenge(id);
     const div = document.createElement('div');
     div.className = 'card';
     div.style.cssText = 'padding:10px;display:flex;align-items:flex-start;gap:8px';
-    div.innerHTML = `${BADGE_HTML[c.d]||BADGE_HTML.easy}<span style="font-size:.85rem">${enemy.emoji} ${enemy.name} ― ${c.name}</span>`;
+    div.innerHTML = `${BADGE_HTML[c.d]||BADGE_HTML.easy}<span style="font-size:.85rem">${c.name}</span>`;
     list.appendChild(div);
   });
 }
 
 function renderGate() {
   updateStreak();
+  finalizeWeeklyRescue();
   const days = daysUntilNextWeek();
   document.getElementById('gate-text').textContent = gateText(G.currentWeek, days);
+}
+
+function finalizeWeeklyRescue() {
+  if (!G.weeklyEnemy) return;
+  const achievedCount = weeklyAchievedCount();
+  const rescueStatus = achievedCount >= 2 ? 'saved' : 'failed';
+  const isFullSaved = G.weeklyAssigned.every(id => { const r = G.weeklyResults[id]; return r && isSaved(r); });
+  const enemy = getEnemyByKey(G.weeklyEnemy);
+  const enemyIdx = ENEMIES.findIndex(e => e.key === G.weeklyEnemy);
+  gasPost({
+    action: 'save_character',
+    run: G.currentRun,
+    week: G.currentWeek,
+    character_id: enemyIdx + 1,
+    character_name: enemy.name,
+    achieved_count: achievedCount,
+    rescue_status: rescueStatus,
+    is_full_saved: isFullSaved,
+    first_met_run: G.currentRun,
+    completed_date: new Date().toISOString().slice(0,10)
+  });
+  checkSpecialTitles();
+}
+
+function checkSpecialTitles() {
+  if (G.metEnemies.length >= ENEMIES.filter(e=>e.key!=='mokunen').length + 1
+      && !G.specialTitles.includes(1)) {
+    G.specialTitles.push(1);
+    save();
+    showTitleToast('🌍 コトバの旅人', 'コトバの王国の隅々まで、あなたの足跡が刻まれた。');
+    gasPost({action:'save_special_title', title_id:1, title_name:'コトバの旅人',
+      achieved_date:new Date().toISOString().slice(0,10), run:G.currentRun});
+  }
+  if (G.savedEnemies.length >= ENEMIES.length && !G.specialTitles.includes(2)) {
+    G.specialTitles.push(2);
+    save();
+    showTitleToast('🌟 王国の解放者', 'すべての呪いが解け、王国に言葉が満ちた。あなたこそが、真の救済者だ。');
+    gasPost({action:'save_special_title', title_id:2, title_name:'王国の解放者',
+      achieved_date:new Date().toISOString().slice(0,10), run:G.currentRun});
+  }
+}
+
+function showTitleToast(title, msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#2a1f3d,#1a1530);border:1px solid var(--gold);border-radius:12px;padding:14px 20px;z-index:9999;text-align:center;max-width:300px;box-shadow:0 0 30px rgba(240,192,96,.4);animation:fadeIn .5s ease';
+  el.innerHTML = `<div style="color:var(--gold);font-weight:700;font-size:1rem;margin-bottom:4px">${title}</div><div style="font-size:.8rem;color:var(--dim)">${msg}</div>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
 }
 
 function updateStreak() {
@@ -1380,13 +1482,32 @@ function renderStatus() {
   const hist = G.challengeHistory.filter(h => h.run === G.currentRun);
   const savedCount  = hist.filter(isSaved).length;
   const failedCount = hist.filter(h => h.status==='failed').length;
+  const savedEnemyCount = (G.savedEnemies || []).length;
   document.getElementById('status-achievements').innerHTML =
     `累計XP：${G.totalXp} XP<br>`
-    + `累計救済数：${G.totalSaved} 体<br>`
-    + `今周回救済：${savedCount} チャレンジ<br>`
-    + `今周回未達：${failedCount} チャレンジ<br>`
+    + `救済した魂：${savedEnemyCount} 体 ／ ${ENEMIES.length} 体<br>`
+    + `今周回救済チャレンジ：${savedCount}<br>`
+    + `今周回未達チャレンジ：${failedCount}<br>`
     + `現在ストリーク：${G.streak} 週<br>`
     + `最大ストリーク：${G.maxStreak} 週`;
+
+  // Special titles
+  const titlesCard = document.getElementById('special-titles-card');
+  const titlesList = document.getElementById('special-titles-list');
+  const TITLE_DEF = [
+    {id:1, icon:'🌍', name:'コトバの旅人', desc:'全17体のキャラに出会った'},
+    {id:2, icon:'🌟', name:'王国の解放者', desc:'全17体のキャラを救済した'},
+  ];
+  const owned = (G.specialTitles || []);
+  if (owned.length > 0) {
+    titlesCard.style.display = '';
+    titlesList.innerHTML = owned.map(id => {
+      const t = TITLE_DEF.find(x => x.id === id);
+      return t ? `<div>${t.icon} <strong>${t.name}</strong> <span class="dim">― ${t.desc}</span></div>` : '';
+    }).join('');
+  } else {
+    titlesCard.style.display = 'none';
+  }
 }
 
 // ─── RENDER: LOG (3-layer) ───
@@ -1406,10 +1527,11 @@ function renderLog() {
     mapScroll.appendChild(chip);
   }
 
-  // Layer 2: 図鑑 grid
+  // Layer 2: 図鑑 grid (v4.2: enemy-level rescue status)
   const hist = G.challengeHistory;
-  const savedKeys  = new Set(hist.filter(isSaved).map(h=>h.enemyKey).filter(Boolean));
-  const failedKeys = new Set(hist.filter(h=>h.status==='failed').map(h=>h.enemyKey).filter(Boolean));
+  const savedKeys  = new Set(G.savedEnemies || []);
+  const metKeys    = new Set(G.metEnemies || hist.map(h=>h.enemyKey).filter(Boolean));
+  const failedKeys = new Set([...metKeys].filter(k => !savedKeys.has(k)));
 
   const grid = document.getElementById('zukan-grid');
   grid.innerHTML = '';
@@ -1441,14 +1563,13 @@ function renderLog() {
   });
 
   // Layer 3: stats
-  const savedCount  = hist.filter(isSaved).length;
-  const failedCount = hist.filter(h=>h.status==='failed').length;
-  const unknown2    = ENEMIES.length - savedKeys.size - failedKeys.size + (savedKeys.has(undefined)?1:0);
+  const savedEnemyCount  = savedKeys.size;
+  const failedEnemyCount = failedKeys.size;
+  const unknownCount     = ENEMIES.length - savedEnemyCount - failedEnemyCount;
   document.getElementById('log-stats').innerHTML =
-    `救済した魂：<span class="log-stats-val">${savedCount}</span> 回 ／ `
-    + `累計救済数：<span class="log-stats-val">${G.totalSaved}</span> 体<br>`
-    + `まだ届かない魂：<span class="log-stats-val">${failedCount}</span> 回<br>`
-    + `未出会いの魂：<span class="log-stats-val">${ENEMIES.length - savedKeys.size - (failedKeys.size - [...failedKeys].filter(k=>savedKeys.has(k)).length)}</span> 体<br>`
+    `救済した魂：<span class="log-stats-val">${savedEnemyCount}</span> 体 ／ `
+    + `まだ届かない魂：<span class="log-stats-val">${failedEnemyCount}</span> 体<br>`
+    + `未出会いの魂：<span class="log-stats-val">${Math.max(0, unknownCount)}</span> 体<br>`
     + `ストリーク最大：<span class="log-stats-val">${G.maxStreak}</span> 週`;
 }
 
@@ -1627,10 +1748,12 @@ function execNewGame() {
   G.weeklyAssigned = [];
   G.weeklySelected = [];
   G.weeklyResults  = {};
-  G.weeklyEnemyMap = {};
+  G.weeklyEnemy    = null;
+  G.weeklyRescueDone = false;
   G.challengeFlowIndex = 0;
   G.lastWeekIds    = [];
   G.usedIds        = {};
+  G.usedEnemies    = {};
   G.startDate      = today;
   G.startDayOfWeek = new Date().getDay();
   G.prevRunSummary = null;
@@ -1720,7 +1843,7 @@ document.getElementById('btn-skip-remnant').onclick = () => {
       run:G.currentRun, week:G.currentWeek,
       challenge_id:c.id, challenge_name:c.name, difficulty:c.d,
       status:'skipped', memo:'', ts:new Date().toISOString(),
-      enemyKey: G.weeklyEnemyMap[id] || null
+      enemyKey: G.weeklyEnemy || null
     });
   });
   save();
