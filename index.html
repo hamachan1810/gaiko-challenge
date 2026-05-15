@@ -127,7 +127,8 @@ textarea{resize:vertical;min-height:80px}
 .c-tab-icon{font-size:1.3rem;line-height:1}
 .c-tab-diff{font-size:.6rem;color:var(--dim)}
 .scene-area{border-radius:12px;position:relative;overflow:hidden;margin-bottom:10px;height:55svh;background-size:cover;background-position:center center;transition:background-image 0.8s ease;background-color:#0a1628}
-.scene-enemy{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:75%;width:auto;background:transparent;background-color:transparent;mix-blend-mode:normal;filter:drop-shadow(0 0 18px rgba(155,109,255,.35));transition:all .6s ease}
+.scene-enemy{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:75%;width:auto;background:transparent;background-color:transparent;mix-blend-mode:normal;transition:all .6s ease}
+.scene-area::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 60px rgba(155,109,255,.15)}
 .scene-name-label{position:absolute;bottom:7px;font-size:.72rem;color:rgba(232,223,200,.8);font-family:'Zen Antique',serif;text-shadow:0 1px 6px rgba(0,0,0,.9);letter-spacing:.06em}
 .quest-bottom{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
 .quest-challenge-name{font-size:.9rem;line-height:1.65;margin:6px 0 10px;color:var(--text)}
