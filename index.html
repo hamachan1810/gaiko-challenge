@@ -156,62 +156,6 @@ textarea{resize:vertical;min-height:80px}
 .stat-bar-h-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width 1s ease}
 .hl-stat .stat-name{color:var(--gold)}
 .hl-stat .stat-bar-h-fill{background:linear-gradient(90deg,#f0a030,#f0c060)}
-/* LOG */
-#screen-log{padding:16px 16px 70px;display:flex;flex-direction:column;gap:0;height:100svh;overflow:hidden}
-.log-section-title{font-family:'Zen Antique',serif;color:var(--gold);font-size:.9rem;margin:16px 0 8px 2px}
-.seg-ctrl{display:flex;background:#110d20;border-radius:22px;padding:3px;gap:2px;margin-bottom:10px;flex-shrink:0}
-.seg-btn{flex:1;padding:8px 4px;border:none;border-radius:18px;background:none;color:var(--dim);font-size:.75rem;cursor:pointer;font-family:'Shippori Mincho',serif;transition:.2s;white-space:nowrap}
-.seg-btn.active{background:var(--surface);color:var(--gold);box-shadow:0 1px 4px rgba(0,0,0,.4)}
-.seg-panel{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.seg-panel.active{display:block}
-.log-map-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:4px;-webkit-overflow-scrolling:touch}
-.log-map-scroll::-webkit-scrollbar{height:3px}
-.log-map-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.log-week-chip{flex-shrink:0;width:52px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 2px;font-size:.62rem;cursor:default;transition:.2s}
-.log-week-chip.wc-done{border-color:var(--easy);background:#0a1c0f}
-.log-week-chip.wc-current{border-color:var(--gold);background:#1e1640}
-.log-week-chip.wc-locked{opacity:.28}
-.log-week-chip-icon{font-size:1rem;margin-bottom:2px}
-.zukan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
-.zukan-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;transition:.2s;position:relative;overflow:hidden;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.zukan-card:hover{border-color:var(--accent);transform:translateY(-1px)}
-.zukan-card.zc-saved{border-color:var(--color-saved-border);background:#1c140a}
-.zukan-card.zc-failed{border-color:var(--color-failed-border);opacity:.75}
-.zukan-card.zc-unknown{opacity:.45;cursor:default}
-.zukan-emoji{font-size:1.8rem;margin-bottom:3px;line-height:1}
-.zukan-img{width:52px;height:52px;object-fit:contain;border-radius:6px;margin-bottom:3px}
-.zukan-name{font-size:.57rem;line-height:1.3;color:var(--text);word-break:break-all}
-.zukan-card.zc-unknown .zukan-name{color:var(--dim)}
-.zukan-status{position:absolute;top:2px;right:3px;font-size:.6rem}
-.log-stats-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:.82rem;line-height:2.4;color:var(--dim)}
-.log-stats-val{color:var(--gold);font-weight:700}
-/* DETAIL SHEET */
-.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:700;display:none;align-items:stretch;flex-direction:column}
-.detail-overlay.show{display:flex}
-.detail-sheet{width:100%;height:100%;background:#120f22;border:none;display:flex;flex-direction:column;animation:fadeIn .25s ease}
-.detail-sheet.ds-saved{background:#1e150a}
-.detail-sheet-handle{display:none}
-.detail-header{display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
-.detail-close-btn{background:none;border:1px solid var(--border);color:var(--text);font-family:'Shippori Mincho',serif;font-size:.85rem;padding:6px 14px;border-radius:20px;cursor:pointer}
-.detail-scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
-.detail-img-area{text-align:center;margin-bottom:12px}
-.detail-img{width:clamp(120px,40vw,200px);height:auto;object-fit:contain;margin:0 auto;display:block;border-radius:12px;box-shadow:0 0 0 3px rgba(155,109,255,.3),0 0 0 7px rgba(155,109,255,.1);transition:all .4s ease}
-.detail-img-fallback{font-size:4rem;text-align:center;margin:10px 0}
-.detail-img-toggle{display:flex;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap}
-.detail-img-toggle button{padding:4px 10px;font-size:.68rem;border-radius:12px;border:1px solid var(--border);background:none;color:var(--text);cursor:pointer;transition:.15s;font-family:'Shippori Mincho',serif}
-.detail-img-toggle button.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.detail-name{font-family:'Zen Antique',serif;font-size:1.05rem;margin-bottom:6px}
-.detail-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-.detail-date{font-size:.72rem;color:var(--dim)}
-.detail-flavor{font-size:.84rem;line-height:1.9;margin-bottom:10px;color:#c8b8f0}
-.ds-saved .detail-flavor{color:#8a6840}
-.detail-fear-tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.7rem;background:rgba(155,109,255,.15);border:1px solid var(--accent);color:var(--accent);margin-bottom:8px}
-.ds-saved .detail-fear-tag{background:#f0e8d0;border-color:#c8a870;color:#7a5020}
-.detail-challenge{font-size:.75rem;color:var(--dim);line-height:1.8;margin-top:4px}
-.detail-status-badge{padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:700}
-.dsb-saved{background:rgba(91,204,122,.2);color:var(--easy);border:1px solid var(--easy)}
-.dsb-failed{background:rgba(155,109,255,.15);color:var(--accent);border:1px solid var(--accent)}
-.dsb-unknown{background:rgba(100,80,120,.2);color:var(--dim);border:1px solid var(--dim)}
 /* NEWGAME+ */
 #screen-newgame{padding-bottom:80px;background:radial-gradient(ellipse at center,#200a30 0%,var(--bg) 70%);gap:0}
 .newgame-player{display:flex;justify-content:center;margin-bottom:12px}
@@ -411,24 +355,6 @@ textarea{resize:vertical;min-height:80px}
   <div class="card" id="special-titles-card" style="display:none"><h2>✨ 特別称号</h2><div id="special-titles-list" style="font-size:.88rem;line-height:2.1"></div></div>
 </div>
 
-<!-- LOG -->
-<div id="screen-log" class="screen">
-  <h1 style="font-size:1.1rem;margin-bottom:10px">📜 冒険記録</h1>
-  <div class="seg-ctrl">
-    <button class="seg-btn active" onclick="switchLogTab('map',this)">🗺️ マップ</button>
-    <button class="seg-btn" onclick="switchLogTab('zukan',this)">📖 図鑑</button>
-    <button class="seg-btn" onclick="switchLogTab('stats',this)">📊 記録</button>
-  </div>
-  <div class="seg-panel active" id="log-panel-map">
-    <div class="log-map-scroll" id="log-map-scroll"></div>
-  </div>
-  <div class="seg-panel" id="log-panel-zukan">
-    <div class="zukan-grid" id="zukan-grid"></div>
-  </div>
-  <div class="seg-panel" id="log-panel-stats">
-    <div class="log-stats-card" id="log-stats"></div>
-  </div>
-</div>
 
 <!-- NEWGAME+ -->
 <div id="screen-newgame" class="screen">
@@ -477,25 +403,12 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div>
 
-<!-- DETAIL MODAL -->
-<div id="detail-overlay" class="detail-overlay">
-  <div class="detail-sheet" id="detail-sheet">
-    <div class="detail-header" id="detail-header">
-      <button class="detail-close-btn" onclick="closeDetail()">← 閉じる</button>
-    </div>
-    <div class="detail-scroll-body">
-      <div class="detail-img-area" id="detail-img-area"></div>
-      <div id="detail-body"></div>
-    </div>
-  </div>
-</div>
 
 <!-- NAVBAR -->
 <nav id="navbar">
   <button class="nav-btn" onclick="navTo('screen-map',this)"><span class="nav-icon">🗺️</span>マップ</button>
   <button class="nav-btn" onclick="navTo('screen-quest',this)"><span class="nav-icon">🙏</span>クエスト</button>
   <button class="nav-btn" onclick="navTo('screen-status',this)"><span class="nav-icon">📊</span>ステータス</button>
-  <button class="nav-btn" onclick="navTo('screen-log',this)"><span class="nav-icon">📜</span>記録</button>
 </nav>
 
 <script>
@@ -785,7 +698,6 @@ function showScreen(id) {
   document.getElementById('navbar').classList.toggle('active', inGame);
   if (id === 'screen-map')    renderMap();
   if (id === 'screen-status') renderStatus();
-  if (id === 'screen-log')    renderLog();
   if (id === 'screen-quest')  renderQuest();
 }
 function navTo(id, btn) {
@@ -793,7 +705,7 @@ function navTo(id, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b === btn));
 }
 function activeNavBtn(id) {
-  const m = {'screen-map':0,'screen-quest':1,'screen-status':2,'screen-log':3};
+  const m = {'screen-map':0,'screen-quest':1,'screen-status':2};
   const idx = m[id];
   if (idx !== undefined)
     document.querySelectorAll('.nav-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
@@ -1536,159 +1448,6 @@ function renderStatus() {
   }
 }
 
-// ─── RENDER: LOG (3-layer) ───
-
-let _logTab = 'map';
-function switchLogTab(tab, btn) {
-  _logTab = tab;
-  document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  document.querySelectorAll('.seg-panel').forEach(p => p.classList.remove('active'));
-  const panel = document.getElementById(`log-panel-${tab}`);
-  if (panel) panel.classList.add('active');
-}
-
-function renderLog() {
-  // タブ表示状態を復元
-  document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
-  const activeBtn = document.querySelector(`.seg-btn[onclick*="${_logTab}"]`);
-  if (activeBtn) activeBtn.classList.add('active');
-  document.querySelectorAll('.seg-panel').forEach(p => p.classList.remove('active'));
-  const activePanel = document.getElementById(`log-panel-${_logTab}`);
-  if (activePanel) activePanel.classList.add('active');
-  // Layer 1: week map scroll
-  const mapScroll = document.getElementById('log-map-scroll');
-  mapScroll.innerHTML = '';
-  for (let w = 1; w <= 15; w++) {
-    const isCurrent = w === G.currentWeek;
-    const isDone    = w < G.currentWeek || (isCurrent && G.weekPhase === 'gate');
-    const isLocked  = w > G.currentWeek;
-    const chip = document.createElement('div');
-    chip.className = 'log-week-chip' + (isDone&&!isCurrent?' wc-done':isCurrent?' wc-current':isLocked?' wc-locked':'');
-    const icon = w===15?'🏰': isDone&&!isCurrent?'✅': isCurrent?'🙏':'🔒';
-    chip.innerHTML = `<div class="log-week-chip-icon">${icon}</div>W${w}`;
-    mapScroll.appendChild(chip);
-  }
-
-  // Layer 2: 図鑑 grid (v4.2: enemy-level rescue status)
-  const hist = G.challengeHistory;
-  const savedKeys  = new Set(G.savedEnemies || []);
-  const metKeys    = new Set(G.metEnemies || hist.map(h=>h.enemyKey).filter(Boolean));
-  const failedKeys = new Set([...metKeys].filter(k => !savedKeys.has(k)));
-
-  const grid = document.getElementById('zukan-grid');
-  grid.innerHTML = '';
-  ENEMIES.forEach(enemy => {
-    const wasSaved  = savedKeys.has(enemy.key);
-    const wasFailed = !wasSaved && failedKeys.has(enemy.key);
-    const unknown   = !wasSaved && !wasFailed;
-
-    const card = document.createElement('div');
-    card.className = 'zukan-card' + (wasSaved?' zc-saved':wasFailed?' zc-failed':unknown?' zc-unknown':'');
-
-    const imgSrc = wasSaved
-      ? `assets/enemies/${enemy.key}_saved.png`
-      : wasFailed ? `assets/enemies/${enemy.key}_failed.png`
-      : `assets/enemies/${enemy.key}_normal.png`;
-    const imgFilter = unknown ? 'grayscale(100%) brightness(0.4)' : '';
-
-    card.innerHTML = `
-      <span class="zukan-status">${wasSaved?'✨':wasFailed?'😔':''}</span>
-      <img src="${imgSrc}" alt="${enemy.name}" class="zukan-img" style="filter:${imgFilter}"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <div style="font-size:1.6rem;display:none">${enemy.emoji}</div>
-      <div class="zukan-name">${unknown?'？？？':enemy.name}</div>`;
-
-    if (!unknown) {
-      card.onclick = () => openDetail(enemy.key, hist);
-    }
-    grid.appendChild(card);
-  });
-
-  // Layer 3: stats
-  const savedEnemyCount  = savedKeys.size;
-  const failedEnemyCount = failedKeys.size;
-  const unknownCount     = ENEMIES.length - savedEnemyCount - failedEnemyCount;
-  document.getElementById('log-stats').innerHTML =
-    `救済した魂：<span class="log-stats-val">${savedEnemyCount}</span> 体 ／ `
-    + `まだ届かない魂：<span class="log-stats-val">${failedEnemyCount}</span> 体<br>`
-    + `未出会いの魂：<span class="log-stats-val">${Math.max(0, unknownCount)}</span> 体<br>`
-    + `ストリーク最大：<span class="log-stats-val">${G.maxStreak}</span> 週`;
-}
-
-// ─── DETAIL CARD ───
-
-function openDetail(enemyKey, hist) {
-  const enemy = getEnemyByKey(enemyKey);
-  const entries = hist.filter(h => h.enemyKey === enemyKey);
-  const savedEntry  = entries.find(isSaved);
-  const failedEntry = entries.find(h => h.status==='failed');
-
-  const status = savedEntry ? 'saved' : failedEntry ? 'failed' : 'unknown';
-  let currentMode = status === 'saved' ? 'saved' : status === 'failed' ? 'failed' : 'normal';
-
-  const sheet = document.getElementById('detail-sheet');
-  sheet.className = 'detail-sheet' + (status==='saved'?' ds-saved':'');
-
-  function imgSrc(mode) {
-    return `assets/enemies/${enemy.key}_${mode}.png`;
-  }
-
-  const imgArea = document.getElementById('detail-img-area');
-  imgArea.innerHTML = `
-    <img id="detail-main-img" src="${imgSrc(currentMode)}" alt="${enemy.name}" class="detail-img"
-      onerror="this.style.display='none';document.getElementById('detail-emoji').style.display='block'">
-    <div id="detail-emoji" style="font-size:4rem;display:none">${enemy.emoji}</div>
-    <div class="detail-img-toggle">
-      ${status==='saved'  ? `<button data-mode="saved"  class="${currentMode==='saved'?'active':''}">✨ 救済後</button>` : ''}
-      <button data-mode="normal" class="${currentMode==='normal'?'active':''}">🌑 呪われた姿</button>
-      ${status==='failed' ? `<button data-mode="failed" class="${currentMode==='failed'?'active':''}">😔 届かなかった姿</button>` : ''}
-    </div>`;
-
-  imgArea.querySelectorAll('.detail-img-toggle button').forEach(btn => {
-    btn.onclick = () => {
-      currentMode = btn.dataset.mode;
-      const img = document.getElementById('detail-main-img');
-      img.style.display = 'block';
-      document.getElementById('detail-emoji').style.display = 'none';
-      img.src = imgSrc(currentMode);
-      imgArea.querySelectorAll('.detail-img-toggle button').forEach(b => b.classList.toggle('active', b===btn));
-    };
-  });
-
-  const flavor = (status==='saved' && currentMode==='saved') ? enemy.savedFlavor : enemy.normalFlavor;
-  const statusBadge = status==='saved'
-    ? '<span class="detail-status-badge dsb-saved">✨ 救済済み</span>'
-    : status==='failed'
-    ? '<span class="detail-status-badge dsb-failed">😔 未救済</span>'
-    : '<span class="detail-status-badge dsb-unknown">❓ 未出会い</span>';
-
-  const dateStr = savedEntry
-    ? new Date(savedEntry.ts).toLocaleDateString('ja-JP')
-    : failedEntry ? new Date(failedEntry.ts).toLocaleDateString('ja-JP') : '';
-  const challengeStr = savedEntry
-    ? savedEntry.challenge_name
-    : failedEntry ? failedEntry.challenge_name : '';
-
-  document.getElementById('detail-body').innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-      <div class="detail-name">${enemy.name}</div>
-      ${statusBadge}
-    </div>
-    <div class="detail-meta">
-      ${BADGE_HTML[enemy.diff]||BADGE_HTML.easy}
-      ${dateStr ? `<span class="detail-date">📅 ${dateStr}</span>` : ''}
-    </div>
-    <div class="detail-fear-tag">恐れ：${enemy.fear}</div>
-    <div class="detail-flavor">${flavor}</div>
-    ${challengeStr ? `<div class="detail-challenge">📋 対応したチャレンジ：${challengeStr}</div>` : ''}`;
-
-  document.getElementById('detail-overlay').classList.add('show');
-}
-
-function closeDetail() {
-  document.getElementById('detail-overlay').classList.remove('show');
-}
 
 // ─── NEW GAME+ ───
 
