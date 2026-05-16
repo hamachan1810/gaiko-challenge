@@ -126,9 +126,10 @@ textarea{resize:vertical;min-height:80px}
 .c-tab.skipped{opacity:.35;cursor:default}
 .c-tab-icon{font-size:1.3rem;line-height:1}
 .c-tab-diff{font-size:.6rem;color:var(--dim)}
-.scene-area{border-radius:12px;position:relative;overflow:hidden;margin-bottom:10px;height:55svh;background-size:cover;background-position:center center;transition:background-image 0.8s ease;background-color:#0a1628}
-.scene-enemy{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:75%;width:auto;background:transparent;background-color:transparent;mix-blend-mode:normal;transition:all .6s ease}
-.scene-area::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 60px rgba(155,109,255,.15)}
+.scene-area{border-radius:12px;position:relative;overflow:hidden;margin-bottom:10px;height:55svh;background-size:cover;background-position:center center;transition:background-image 0.8s ease;background-color:#0a1628;-webkit-transform:translateZ(0);transform:translateZ(0)}
+.scene-enemy-wrap{position:absolute;bottom:0;left:0;right:0;height:75%;display:flex;justify-content:center;align-items:flex-end;pointer-events:none}
+.scene-enemy{height:100%;width:auto;max-width:100%;display:block;transition:opacity .6s ease,transform .6s ease}
+.scene-area::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 60px rgba(155,109,255,.15);z-index:1}
 .scene-name-label{position:absolute;bottom:7px;font-size:.72rem;color:rgba(232,223,200,.8);font-family:'Zen Antique',serif;text-shadow:0 1px 6px rgba(0,0,0,.9);letter-spacing:.06em}
 .quest-bottom{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
 .quest-challenge-name{font-size:.9rem;line-height:1.65;margin:6px 0 10px;color:var(--text)}
@@ -1236,8 +1237,10 @@ function renderChallengeContent(id) {
   sceneEl.className = 'scene-area';
   sceneEl.style.backgroundImage = `url(${getSceneBg(week, enemy.key)})`;
   sceneEl.innerHTML = `
-    <img class="scene-enemy" id="z-enemy-img" src="${imgSrc}" alt="${enemy.name}"
-      onerror="this.style.display='none'">
+    <div class="scene-enemy-wrap">
+      <img class="scene-enemy" id="z-enemy-img" src="${imgSrc}" alt="${enemy.name}"
+        onerror="this.style.display='none'">
+    </div>
     <div class="scene-name-label">${enemy.name}</div>`;
 
   const bottomEl = document.getElementById('z-bottom');

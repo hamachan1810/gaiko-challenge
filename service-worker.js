@@ -1,4 +1,4 @@
-const CACHE = 'kotoba-v3';
+const CACHE = 'kotoba-v4';
 const PRECACHE = [
   './',
   './index.html',
